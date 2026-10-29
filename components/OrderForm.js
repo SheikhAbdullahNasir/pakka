@@ -11,6 +11,13 @@ const COMMON_CITIES = [
   'Hyderabad', 'Gujranwala', 'Sialkot', 'Sargodha', 'Bahawalpur', 'Sukkur', 'Abbottabad', 'Mardan',
 ];
 
+// "2500", "2,500" and "2500.50" (rounded to 2501) are fine; "2.5k" or "Rs 2500" are not.
+function parseAmount(text) {
+  const plain = text.trim().replace(/,/g, '');
+  if (!/^\d+(\.\d+)?$/.test(plain)) return NaN;
+  return Math.round(parseFloat(plain));
+}
+
 export default function OrderForm({ existing, orders, refusals, shop, onSave, onClose }) {
   const { t } = useLang();
   const [f, setF] = useState(() => ({
@@ -56,7 +63,7 @@ export default function OrderForm({ existing, orders, refusals, shop, onSave, on
   );
 
   async function submit(send) {
-    const amount = parseInt(f.amount.replace(/\D/g, ''), 10);
+    const amount = parseAmount(f.amount);
     const e = {};
     if (!phone) e.phone = t('phoneInvalid');
     if (!f.customer_name.trim()) e.customer_name = t('required');
@@ -74,9 +81,12 @@ export default function OrderForm({ existing, orders, refusals, shop, onSave, on
       items: f.items.trim(),
       amount,
     };
+    // Phones block new windows opened after waiting for the save, so open an
+    // empty one now, during the tap, and only send it to WhatsApp once the order is saved.
+    let wa = null;
     if (send) {
-      // Open WhatsApp right away (phones block it if we wait for the save).
-      window.open(waLink(phone, confirmationMessage(fields, shop, shop.message_lang)), '_blank', 'noopener');
+      wa = window.open('', '_blank');
+      if (wa) wa.opener = null;
       fields.messages_sent = 1;
       fields.last_message_at = new Date().toISOString();
     }
@@ -85,8 +95,15 @@ export default function OrderForm({ existing, orders, refusals, shop, onSave, on
     try {
       await onSave(fields, existing);
     } catch (err) {
+      if (wa) wa.close();
       setSaveError(t('errorGeneric') + (err?.message ? ` (${err.message})` : ''));
       setBusy(false);
+      return;
+    }
+    if (send) {
+      const link = waLink(phone, confirmationMessage(fields, shop, shop.message_lang));
+      if (wa) wa.location.href = link;
+      else window.location.href = link; // the empty window was blocked: open WhatsApp in this tab
     }
   }
 

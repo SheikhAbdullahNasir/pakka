@@ -1,7 +1,7 @@
 'use client';
 // The whole app lives here: it checks login, loads orders, and shows one of the screens.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { supabase, isDemo } from '@/lib/supabase';
+import { supabase, configMissing } from '@/lib/supabase';
 import * as db from '@/lib/data';
 import { LangContext, makeT, useLang } from '@/lib/i18n';
 import { ordersToCsv, downloadCsv } from '@/lib/csv';
@@ -18,6 +18,8 @@ const now = () => new Date().toISOString();
 export default function App() {
   const [lang, setLang] = useState('en');
   const [session, setSession] = useState(undefined); // undefined = still checking
+  const [demo, setDemo] = useState(false);
+  const [demoRun, setDemoRun] = useState(0); // goes up on "Reset demo" so the screen reloads
 
   useEffect(() => {
     try {
@@ -25,14 +27,21 @@ export default function App() {
       if (saved === 'en' || saved === 'ur') setLang(saved);
     } catch {}
 
+    if (configMissing) return;
+    setDemo(db.demoWasOn());
     if (!supabase) {
-      setSession({ demo: true });
+      setSession(null);
       return;
     }
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
     const { data } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
     return () => data.subscription.unsubscribe();
   }, []);
+
+  // Tells phones and screen readers which language the page is in.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   const langValue = useMemo(
     () => ({
@@ -48,20 +57,57 @@ export default function App() {
     [lang]
   );
 
+  const demoActions = {
+    start: () => {
+      db.startDemo();
+      setDemo(true);
+    },
+    reset: () => {
+      if (!window.confirm(langValue.t('confirmResetDemo'))) return;
+      db.resetDemo();
+      setDemoRun((n) => n + 1);
+    },
+    exit: () => {
+      db.exitDemo();
+      setDemo(false);
+    },
+  };
+
   return (
     <LangContext.Provider value={langValue}>
-      {session === undefined ? (
+      {configMissing ? (
+        <ConfigError />
+      ) : demo ? (
+        <Main key={'demo-' + demoRun} session={{ demo: true }} demoActions={demoActions} />
+      ) : session === undefined ? (
         <div className="center muted">{langValue.t('loading')}</div>
       ) : !session ? (
-        <Login />
+        <Login onTryDemo={demoActions.start} />
       ) : (
-        <Main key={session.user?.id || 'demo'} session={session} />
+        <Main key={session.user.id} session={session} />
       )}
     </LangContext.Provider>
   );
 }
 
-function Main({ session }) {
+// Shown on a live site where the two Supabase settings were never added.
+function ConfigError() {
+  const { t } = useLang();
+  return (
+    <div className="login">
+      <div className="login-top">
+        <LangToggle />
+      </div>
+      <h1>COD Confirmer</h1>
+      <h2>{t('configErrorTitle')}</h2>
+      <p>{t('configErrorBody')}</p>
+      <pre className="preview">{'NEXT_PUBLIC_SUPABASE_URL\nNEXT_PUBLIC_SUPABASE_ANON_KEY'}</pre>
+      <p className="muted">{t('configErrorFix')}</p>
+    </div>
+  );
+}
+
+function Main({ session, demoActions }) {
   const { t } = useLang();
   const [orders, setOrders] = useState(null);
   const [refusals, setRefusals] = useState({});
@@ -97,15 +143,18 @@ function Main({ session }) {
   }
 
   // Changes the screen straight away, then saves. If saving fails, puts it back.
+  // Returns true if it was saved.
   async function patchOrder(id, patch) {
     const before = ordersRef.current.find((o) => o.id === id);
-    if (!before) return;
+    if (!before) return false;
     replaceLocal({ ...before, ...patch });
     try {
       replaceLocal(await db.updateOrder(id, patch));
+      return true;
     } catch {
       replaceLocal(before);
       showToast(t('errorGeneric'));
+      return false;
     }
   }
 
@@ -136,6 +185,11 @@ function Main({ session }) {
   }
 
   async function removeOrder(order) {
+    // Refused orders stay, so the red warning keeps working for that number.
+    if (order.status === 'refused') {
+      showToast(t('refusedNoDelete'));
+      return;
+    }
     if (!window.confirm(t('confirmDelete'))) return;
     try {
       await db.deleteOrder(order.id);
@@ -152,8 +206,12 @@ function Main({ session }) {
     // Give the download a moment to start before asking.
     await new Promise((r) => setTimeout(r, 400));
     if (!window.confirm(t('markAllShipped', { n: list.length }))) return;
-    await Promise.all(list.map((o) => patchOrder(o.id, { status: 'shipped', status_changed_at: now() })));
-    showToast(t('markedShipped', { n: list.length }));
+    const results = await Promise.all(
+      list.map((o) => patchOrder(o.id, { status: 'shipped', status_changed_at: now() }))
+    );
+    const done = results.filter(Boolean).length;
+    const failed = list.length - done;
+    showToast(failed ? t('markedShippedFailed', { n: done, f: failed }) : t('markedShipped', { n: done }));
   }
 
   const ctx = {
@@ -172,7 +230,19 @@ function Main({ session }) {
         <LangToggle />
       </header>
 
-      {isDemo && <div className="banner">{t('demoBanner')}</div>}
+      {session.demo && (
+        <div className="banner">
+          {t('demoBanner')}
+          <div className="actions">
+            <button className="btn ghost" onClick={demoActions.reset}>
+              {t('resetDemo')}
+            </button>
+            <button className="btn ghost" onClick={demoActions.exit}>
+              {t('exitDemo')}
+            </button>
+          </div>
+        </div>
+      )}
       {loadError && <div className="banner danger">{loadError}</div>}
 
       <main className="content">

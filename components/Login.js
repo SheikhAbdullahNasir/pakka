@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useLang } from '@/lib/i18n';
 import LangToggle from './LangToggle';
 
-export default function Login() {
+export default function Login({ onTryDemo }) {
   const { t } = useLang();
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -45,7 +45,9 @@ export default function Login() {
       <h2>{t('loginTitle')}</h2>
       <p className="muted">{t('loginWhy')}</p>
 
-      {step === 'email' ? (
+      {!supabase ? (
+        <p className="banner danger">{t('devNoSupabase')}</p>
+      ) : step === 'email' ? (
         <form onSubmit={sendCode}>
           <label className="field">
             <span>{t('email')}</span>
@@ -85,6 +87,13 @@ export default function Login() {
         </form>
       )}
       {error && <p className="error-text">{error}</p>}
+
+      <section className="section">
+        <button type="button" className="btn ghost block" onClick={onTryDemo}>
+          {t('tryDemo')}
+        </button>
+        <p className="muted">{t('tryDemoHint')}</p>
+      </section>
     </div>
   );
 }

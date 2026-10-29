@@ -67,7 +67,7 @@ export default function SettingsView({ session, shop, onShopSaved }) {
         </div>
       </section>
 
-      {supabase && (
+      {!session.demo && (
         <section className="section">
           <p className="muted">
             {t('signedInAs')} <strong>{session.user?.email}</strong>

@@ -74,8 +74,11 @@ You already have Node.js installed (that's the program that runs JavaScript on y
    ```
 4. Open **http://localhost:3000** in your browser.
 
-You'll see a "Demo mode" note. That's expected: we haven't connected the database yet, so orders
-are saved only in this browser. Add a few test orders and try the buttons.
+You'll see the login screen with a note that Supabase isn't connected yet. That's expected.
+Tap **Try demo**: the app opens with about 10 sample orders (saved only in this browser), so you can
+try every button. The bar at the top has **Reset demo** (bring the sample orders back) and
+**Exit demo** (back to the login screen). Demo mode without Supabase only works on your own
+computer: a live site without the Supabase settings shows a "Setup is not finished" screen instead.
 
 **Try it on your phone:** the terminal also prints a "Network" address like `http://192.168.1.5:3000`.
 Open that on a phone on the same Wi-Fi. (Demo data on the phone is separate from the computer.)
@@ -224,7 +227,7 @@ Save the file, and the running app (`npm run dev`) updates by itself. `git push`
 
 | Problem | Fix |
 |---|---|
-| Still says "Demo mode" after adding keys | The file must be named exactly `.env.local` (with the dot), in this folder. Restart `npm run dev`. On Vercel, check the two Environment Variables, then **Deployments → ⋮ → Redeploy**. |
+| Login screen says Supabase is not connected, or the live site says "Setup is not finished" | The file must be named exactly `.env.local` (with the dot), in this folder. Restart `npm run dev`. On Vercel, check the two Environment Variables, then **Deployments → ⋮ → Redeploy**. |
 | Login email never arrives | Check spam. Supabase's free built-in email only sends **a few emails per hour** and is meant for testing. Before real sellers use it, connect a free email sender: Supabase **Authentication → Emails → SMTP Settings**, using e.g. Resend or Brevo (both have free plans). |
 | "Token has expired or is invalid" | Codes expire after about an hour and can only be used once. Press **Use a different email**, then send a new code. |
 | Orders don't save, error mentions "permission" or "relation does not exist" | The SQL in Part 2 step 3 didn't run fully. Run `supabase/schema.sql` again (it's safe to repeat). |

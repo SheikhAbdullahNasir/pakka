@@ -1,4 +1,11 @@
-# COD Confirmer: Current State (audit, 2026-10-29)
+# COD Confirmer: Current State (audit, 2026-10-29; updated 2026-10-29 after the fixes round)
+
+**Fixes round (2026-10-29).** Six changes were made after the audit: amount parsing, real
+results for CSV "mark as Shipped", save-before-WhatsApp, Refused orders can't be deleted, explicit
+demo mode (with sample orders and a production config-error screen), and `<html lang>` following
+the toggle. They were tested in the browser in demo mode (`npm run dev`, no Supabase) and with a
+production build (`next start`, no Supabase). Nothing was tested against a live Supabase project.
+Sections below are updated to match; section 9 lists what was tested.
 
 How this audit was done: every tracked file was read, `npm run build` was run (it passes), and the
 original request was taken from the first chat session that built the app. The app was **not**
@@ -26,15 +33,15 @@ except the PWA icon generator. All database calls go straight from the browser t
 
 ```
 app/
-  layout.js              <html lang="en">, page title, theme colour
+  layout.js              <html lang="en"> (App.js changes it to match the language), page title, theme colour
   page.js                renders <App />
   globals.css            all styles (light + dark mode)
   manifest.js            PWA manifest ("Add to Home screen")
   icon.svg               favicon
   pwa-icon/[size]/route.js  generates 192/512 PNG icons at build time
 components/
-  App.js                 login check, data loading, tabs, toast/undo, CSV export
-  Login.js               email one-time code login
+  App.js                 login check, demo on/off, config-error screen, data loading, tabs, toast/undo, CSV export
+  Login.js               email one-time code login + "Try demo" button
   LangToggle.js          English / Urdu switch
   OrderForm.js           add / edit order sheet
   OrderCard.js           one order + status buttons
@@ -42,8 +49,8 @@ components/
   OrdersView.js          all orders, search, status filter
   SettingsView.js        shop name, message language, sign out
 lib/
-  data.js                all reads/writes (Supabase, or localStorage in demo mode)
-  supabase.js            creates the Supabase client from env vars
+  data.js                all reads/writes (Supabase, or localStorage in demo mode) + demo sample orders
+  supabase.js            creates the Supabase client from env vars; `configMissing` flag
   phone.js               phone normalising/formatting
   messages.js            WhatsApp message text + wa.me links
   csv.js                 courier CSV builder + download
@@ -62,12 +69,12 @@ README.md                beginner setup guide
 
 | # | Requested | Status | Notes |
 |---|---|---|---|
-| 1 | Add an order in under 20 seconds: name, WhatsApp number, city, items, amount (Rs) | ✅ | `components/OrderForm.js`. Phone field first; returning customers get name/city/address auto-filled; city suggestions list. The "under 20 seconds" goal itself is **unverified** (not timed). Also has an optional Address field. |
-| 2 | "Send confirmation" opens WhatsApp via wa.me with a Roman Urdu message | ✅ | `lib/messages.js`. Text matches the requested template, plus a city/address line and optional shop name. Available on the form ("Save & send on WhatsApp") and on every Waiting order card. English version also exists (chosen in Settings). |
+| 1 | Add an order in under 20 seconds: name, WhatsApp number, city, items, amount (Rs) | ✅ | `components/OrderForm.js`. Phone field first; returning customers get name/city/address auto-filled; city suggestions list. The "under 20 seconds" goal itself is **unverified** (not timed). Also has an optional Address field. Amount accepts digits and commas, and decimals are rounded to whole rupees (`2,500.50` → 2501); anything else (`2.5k`, `Rs 2500`) shows "Enter the amount in rupees using numbers only, like 2500 or 2,500" (both languages). |
+| 2 | "Send confirmation" opens WhatsApp via wa.me with a Roman Urdu message | ✅ | `lib/messages.js`. Text matches the requested template, plus a city/address line and optional shop name. Available on the form ("Save & send on WhatsApp") and on every Waiting order card. English version also exists (chosen in Settings). "Save & send" now saves first: an empty window is opened during the tap (so phones don't block it), then sent to WhatsApp only after the save succeeds, or closed if the save fails. If the browser blocks even the empty window, WhatsApp opens in the same tab after saving. Tested in the browser with `window.open` stubbed; **not** tested on a real phone browser. |
 | 3 | Statuses Waiting, Confirmed, Cancelled, Shipped, Delivered, Refused, one tap each | ✅ | Next-step buttons on the card; "More ▾" shows all six as chips. 5-second Undo toast after each change. |
 | 4 | Red warning on a new order if that number refused before, with count | ✅ | Shown in the form as soon as the number is valid, and on every order card. Counts come from the `customer_refusals` view. Counts are per seller only (by design, because of RLS). |
 | 5 | Daily view: confirmed orders ready to ship, waiting orders with "Remind" | ✅ / 🟡 | `components/TodayView.js` also shows a "Shipped" section. 🟡 It is not filtered by date: it shows **all** orders currently in those statuses, not only today's. Whether that matches the intent is a judgement call. |
-| 6 | Export confirmed list as CSV for the courier | 🟡 | `lib/csv.js`. Works and offers to mark them Shipped afterwards. Columns are generic (Order ID, Customer Name, Phone, City, Address, Items, COD Amount, Order Date); not matched to any specific courier's bulk-upload template (TCS, Leopards, PostEx, etc.). Upload acceptance by any courier is **unverified**. |
+| 6 | Export confirmed list as CSV for the courier | 🟡 | `lib/csv.js`. Works and offers to mark them Shipped afterwards; the toast now reports the real result ("8 orders marked Shipped", or "8 marked Shipped, 2 failed…"). Columns are generic (Order ID, Customer Name, Phone, City, Address, Items, COD Amount, Order Date); not matched to any specific courier's bulk-upload template (TCS, Leopards, PostEx, etc.). Upload acceptance by any courier is **unverified**. |
 
 ### Rules
 
@@ -178,8 +185,18 @@ Whether RLS is **actually on** in a live project: **unverified** (depends on sch
   session detection (**unverified**; requires Site URL / Redirect URLs set in Supabase).
 - Sign-ups are open: anyone with the URL can create an account (Supabase default). Each account
   only sees its own data because of RLS.
-- If the two env vars are missing, there is **no login at all** ("demo mode", data in the browser's
-  localStorage).
+- **Demo mode is explicit.** The login screen has a **Try demo** button. Demo stores everything in
+  this browser's localStorage (`cod-confirmer-demo` for data, `cod-confirmer-demo-on` = `'1'` while
+  demo is on, so it survives a reload). On first entry it seeds 11 sample orders in all six statuses
+  (Pakistani names, cities, items); Kamran Shah (0321-1234567, Multan) has 2 refused orders and a new
+  Waiting one, so the red warning shows. While in demo, a banner says data stays on this device
+  only, with **Reset demo** (asks first, then restores the sample orders) and **Exit demo** (back
+  to login; demo data is kept for next time). Settings hides "Signed in as / Sign out" in demo.
+- **Missing env vars:**
+  - Production build (`next build` / Vercel): a "Setup is not finished" screen naming the two env
+    vars. No login, no demo, even if a demo flag is left in the browser.
+  - Development (`npm run dev`): the login screen shows "Supabase is not connected on this
+    computer…" instead of the email form, and only **Try demo** works.
 
 ---
 
@@ -195,7 +212,8 @@ Not covered / always English:
 - Toggle button labels "English" / "Urdu" and the message-language buttons "Roman Urdu" / "English"
   (arguably intentional).
 - App name "COD Confirmer", the `aria-label="Language"`, the amount placeholder "2500", "Rs".
-- `<html lang="en">` never changes.
+- `<html lang>` now follows the toggle (`en` / `ur`), set from `App.js`. The server-rendered HTML
+  still starts as `lang="en"` until the page loads.
 - The app always starts in English for a split second before the saved language loads
   (state default is `'en'`, read from localStorage after mount).
 
@@ -210,20 +228,20 @@ No `TODO` or `FIXME` comments exist in the code.
 
 ### Bugs (found by reading code; not reproduced in a browser)
 
-1. **Amount with a decimal point is misread.** `OrderForm.js` strips every non-digit, so
-   `2500.50` becomes `250050` and `2.5k` becomes `25`. Commas are fine (`2,500` → `2500`).
-2. **CSV "mark as Shipped" always reports success.** `exportForCourier` in `App.js` shows
-   "N orders marked Shipped" even if some updates failed (each failure briefly shows an error toast
-   that is then overwritten).
+1. ~~Amount with a decimal point is misread.~~ **Fixed:** digits and commas only, decimals rounded,
+   anything else rejected with a message.
+2. ~~CSV "mark as Shipped" always reports success.~~ **Fixed:** shows "N marked Shipped, M failed".
 3. **Only the newest 1,000 orders are loaded** (`listOrders` `.limit(1000)`). After that, older
    Waiting/Confirmed orders disappear from Today/Orders, and returning-customer auto-fill misses them.
    Refusal counts are not affected (they come from the view).
-4. **"Save & send" opens WhatsApp before saving.** If the save then fails, the customer may already
-   have the message but the order is not stored; retrying opens WhatsApp again.
+4. ~~"Save & send" opens WhatsApp before saving.~~ **Fixed:** WhatsApp opens only after a successful save.
 5. **Message counter counts taps, not sends.** Tapping Send/Remind increments `messages_sent`
    even if the seller backs out of WhatsApp.
-6. **Deleting a refused order erases that refusal from history** (hard delete), so the red warning
-   can be lost.
+6. ~~Deleting a refused order erases that refusal from history.~~ **Fixed in the app:** tapping
+   Delete on a Refused order shows "Refused orders cannot be deleted. They are kept so you are
+   warned if this number orders again." (both languages). Not enforced in the database: the
+   `orders` delete policy in `schema.sql` is unchanged, and a seller can still change the status
+   away from Refused and then delete.
 7. **No live sync between devices.** A second phone/computer sees changes only after reload.
 8. Two quick status taps on the same order can race: each update is sent independently, and the
    last response to arrive wins (**unverified** in practice).
@@ -238,7 +256,8 @@ No `TODO` or `FIXME` comments exist in the code.
 | Load limit 1000 orders; page size 50 | `lib/data.js`, `components/OrdersView.js` |
 | Undo/toast 5 s; 400 ms delay before "mark shipped?" | `components/App.js` |
 | Settings preview sample (Ayesha, 2 lawn suits, Rs 4500, Lahore) | `components/SettingsView.js`, `lib/i18n.js` |
-| localStorage keys `cod-confirmer-lang`, `cod-confirmer-demo` | `App.js`, `lib/data.js` |
+| localStorage keys `cod-confirmer-lang`, `cod-confirmer-demo`, `cod-confirmer-demo-on` | `App.js`, `lib/data.js` |
+| Demo sample orders (11: names, phones, cities, items) | `lib/data.js` (`sampleData`) |
 | Number format `en-PK`, CSV date `en-GB` (dd/mm/yyyy) | `lib/messages.js`, `lib/csv.js` |
 | Pakistani-only phone rules | `lib/phone.js`, `supabase/schema.sql` |
 | CSV Order ID = first 8 chars of the UUID (not a sequential number) | `lib/csv.js` |
@@ -248,9 +267,10 @@ does not exist on this machine.
 
 ### Things that would break or hurt in production
 
-1. **Silent demo mode.** If `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` are missing
-   on Vercel, the live site runs with no login and stores orders only in each browser. A yellow
-   banner appears, but nothing stops a seller from using it and losing data.
+1. ~~Silent demo mode.~~ **Fixed:** a production build without `NEXT_PUBLIC_SUPABASE_URL` /
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY` shows a configuration error screen. The env vars are baked in at
+   build time, so after adding them on Vercel you must redeploy. Demo mode is still available on a
+   configured live site via **Try demo** (data stays in that browser, and the banner says so).
 2. **Supabase's built-in email is rate-limited** (a few emails per hour). Real sellers will fail to
    log in until custom SMTP (e.g. Resend, Brevo) is set up. README mentions this; setup is
    **unverified**.
@@ -281,5 +301,29 @@ does not exist on this machine.
   `npm run dev` here runs in demo mode. Earlier chats only mention the placeholder
   `abcdefgh.supabase.co`. Whether a Supabase project exists and `schema.sql` was run is
   **unverified**.
-- **Build:** ✅ `npm run build` succeeds (Next.js 16.4.3, Turbopack). Routes: `/` (static),
+- **Build:** ✅ `npm run build` succeeds (Next.js 16.4.3, Turbopack; re-checked after the fixes round). Routes: `/` (static),
   `/manifest.webmanifest`, `/icon.svg`, `/pwa-icon/192`, `/pwa-icon/512`.
+
+---
+
+## 9. Fixes round: what was tested (2026-10-29)
+
+Browser: the Claude desktop app's built-in browser, phone-size viewport (375×812), no Supabase.
+
+| Check | Result |
+|---|---|
+| Dev server, no env vars: login shows "Supabase is not connected…" + Try demo | ✅ |
+| Try demo seeds 11 orders covering all six statuses | ✅ |
+| Red "Refused 2 time(s) before!" on Kamran Shah's Waiting order | ✅ |
+| Delete on a Refused order: blocked, message shown in English and Roman Urdu, order kept | ✅ |
+| Language toggle sets `<html lang>` to `ur` / `en` | ✅ |
+| Amount `2.5k` and `Rs 2500` rejected with the message; `2500` saved; `2,500.50` saved as 2501 | ✅ |
+| Save & send: empty window opened during the tap, sent to wa.me only after the order was saved (`window.open` stubbed) | ✅ |
+| CSV export with one update forced to fail: toast "1 marked Shipped, 1 failed…" | ✅ |
+| Reset demo restores the 11 sample orders; demo survives a reload; Exit demo returns to login | ✅ |
+| Production build (`next start`), no env vars: "Setup is not finished" screen, even with a demo flag set | ✅ |
+| No console errors during the demo run | ✅ |
+
+Not tested: real Supabase login and saves, the save-failure path of Save & send (demo saves can't
+fail), WhatsApp actually opening on a real Android/iPhone browser, and the Urdu config-error text
+on screen (the text exists in `lib/i18n.js`).
