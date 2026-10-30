@@ -47,7 +47,7 @@ export default function OrderCard({ order, ctx }) {
     main = sent ? (
       <>
         {statusButton('confirmed', t('markConfirmed'), 'primary')}
-        {waButton(t('remind'), 'secondary')}
+        {waButton(t('remind'), 'secondary narrow')}
       </>
     ) : (
       waButton(t('sendConfirm'), 'primary')

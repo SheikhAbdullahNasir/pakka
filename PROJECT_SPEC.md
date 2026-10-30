@@ -68,6 +68,8 @@ Every status chip shows a text label. Color is never the only signal.
 | Delivered | `#1F4D3A` | `#FFF6E6` |
 | Refused | `#F6DDD3` | `#8A3A22` |
 
+In the "···" sheet, all six chips use a light background, so none looks like a filled button. Delivered, the only filled chip above, uses `#CFE3C4` with `#1F4D3A` text there (7.08:1). Only the current status is marked, with a dark border (`--text`) and a check mark.
+
 ### 3.3 Typography
 
 - Font: Plus Jakarta Sans via `next/font/google` (self-hosted, no layout shift), with a system sans-serif fallback.
@@ -100,7 +102,7 @@ Every status chip shows a text label. Color is never the only signal.
 - One-line description: confirm every order on WhatsApp before it ships, and get warned about customers who refused before.
 - Primary button: **Try the demo**. Helper text below: demo needs no account.
 - Secondary (outline) button: **Log in with email**. Tapping it reveals the email field and the code step in place.
-- Footer line: made for Instagram and WhatsApp sellers in Pakistan.
+- Footer line: made for Instagram and WhatsApp sellers in Pakistan. It stays at the bottom, and the content block is centered vertically in the space above it.
 - When Supabase is not configured in development, hide the email option and keep demo only. No red error box on this screen.
 
 ### 4.2 App shell
@@ -144,9 +146,9 @@ Main action by status:
 
 Buttons always use action words ("Mark confirmed"), never a bare status name, so they can't be confused with the status chip.
 
-When the main action(s) and "···" don't fit on one row at 360px (for example the Shipped card), the main buttons share the first row and "···" moves to the right end of a second row.
+When the main action(s) and "···" don't fit on one row at 360px (for example the Shipped card), the main buttons share the first row and "···" moves to the right end of a second row. **Remind** has narrower padding so the Waiting card fits on one row where the text allows (English at 360px does, Roman Urdu does not).
 
-The "···" button opens a bottom sheet with: change status (all six as chips, current one marked), Open chat in WhatsApp, Edit, Delete. Delete on a Refused order shows the existing "refusal history is kept" message.
+The "···" button opens a bottom sheet with: change status (all six as light chips, current one marked, see 3.2), Open chat in WhatsApp, Edit, Delete. Delete on a Refused order shows the existing "refusal history is kept" message.
 
 Every status change keeps the existing 5-second Undo toast.
 

@@ -37,6 +37,9 @@
   --st-delivered-text: #FFF6E6;
   --st-refused-bg: #F6DDD3;
   --st-refused-text: #8A3A22;
+  /* Delivered in the "···" sheet, where every chip stays light */
+  --st-delivered-light-bg: #CFE3C4;
+  --st-delivered-light-text: #1F4D3A;
 
   --radius-card: 16px;
   --radius-btn: 12px;
@@ -233,6 +236,8 @@ input:focus, textarea:focus { outline: none; border: 2px solid var(--primary); p
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .actions .main { flex: 1 1 auto; display: flex; flex-wrap: wrap; gap: 8px; }
 .actions .main .btn { flex: 1 1 auto; }
+/* Narrow "Remind", so "Mark confirmed", "Remind" and "···" can share one row at 360px. */
+.actions .main .btn.narrow { padding: 0 8px; }
 .more-btn {
   flex: none; margin-left: auto; width: 52px; min-height: 48px; padding: 0;
   font-size: 20px; font-weight: 700; letter-spacing: 1px; color: var(--text);
@@ -277,6 +282,7 @@ input:focus, textarea:focus { outline: none; border: 2px solid var(--primary); p
   min-height: 48px; border-radius: 999px; border: 2px solid transparent;
   font-size: 14px; font-weight: 700; cursor: pointer; padding: 0 8px;
 }
+.status-grid button.st-delivered { background: var(--st-delivered-light-bg); color: var(--st-delivered-light-text); }
 .status-grid button[aria-pressed='true'] { border-color: var(--text); }
 .sheet-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
 .sheet-list .btn { justify-content: flex-start; width: 100%; padding: 0 16px; }
@@ -332,11 +338,12 @@ input:focus, textarea:focus { outline: none; border: 2px solid var(--primary); p
 
 /* ---------- welcome / login / setup error ---------- */
 .welcome {
-  max-width: 440px; margin: 0 auto; min-height: 100vh; padding: 8px 16px 24px;
+  max-width: 440px; margin: 0 auto; min-height: 100vh; min-height: 100dvh; padding: 8px 16px 24px;
   display: flex; flex-direction: column;
 }
 .welcome-top { display: flex; justify-content: flex-end; }
-.welcome-main { flex: 1; padding-top: 24px; }
+/* The content block sits in the middle of the space between the language chip and the footer. */
+.welcome-main { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-top: 24px; }
 .monogram {
   width: 56px; height: 56px; border-radius: var(--radius-card);
   background: var(--primary); color: var(--on-primary);

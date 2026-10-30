@@ -1,5 +1,9 @@
 # COD Confirmer: Current State (audit, 2026-10-29; updated 2026-10-29 after the fixes round)
 
+**Phase 2 polish pass (2026-10-30).** Roman Urdu wording updated (Shipped is now "Ship ho gaya"
+everywhere), all six chips in the "···" sheet are light, "Remind" is narrower, and the welcome content
+is centered vertically. Section 11 lists what was tested.
+
 **Phase 2 UI redesign (2026-10-30).** The whole interface was redone to match `PROJECT_SPEC.md`
 sections 3 and 4: "warm local" colours (cream, deep green, mustard), Plus Jakarta Sans, light mode
 only, new app shell, new order card with a "···" bottom sheet, redesigned Today / Orders / order form
@@ -366,3 +370,30 @@ values (to see the email login and its error) and one with none (setup-error scr
 Not tested: a real phone, real Supabase login (the code step and the "code is wrong" message), the
 save-failure message in the order form (demo saves can't fail), Save and send opening WhatsApp
 (logic unchanged since the fixes round), and screen readers.
+
+---
+
+## 11. Phase 2 polish pass: what was tested (2026-10-30)
+
+Browsers: headless Edge (scripted checks and screenshots) and the Claude desktop app's built-in browser,
+at 360×780 and 412×860, in English and Roman Urdu, on the dev server in demo mode. A placeholder Supabase
+address was used to show the email login, then removed.
+
+| Check | Result |
+|---|---|
+| No horizontal overflow, no clipped button text, no tap target under 48px: welcome, Today, "···" sheet, Orders, Settings, order form (both widths, both languages) | ✅ |
+| Waiting card with message sent, English: "Mark confirmed", "Remind" and "···" on one row at 360px and 412px | ✅ |
+| Same card, Roman Urdu: does not fit on one row ("Confirm mark karein" + "Yaad dilaein" are too wide) | 🟡 Layout unchanged: **three rows at 360px** (the two buttons miss sharing a row by about 8px), two rows at 412px |
+| "···" sheet: six light chips, Delivered no longer filled; only the current status has the dark border and ✓, checked with Waiting and with Delivered as the current status | ✅ |
+| Urdu Shipped label shows "Ship ho gaya" on the card chip, filter chip and sheet; no "Bhej diya" left for the Shipped status | ✅ |
+| Welcome: content centered, footer 24px from the bottom, no page scroll (with and without the email button) | ✅ |
+| Setup-error screen, which shares the welcome layout, in a production build with no env vars (English, 360px): centered, no overflow | ✅ |
+| Failed email request in Urdu shows the new `errNetwork` text | ✅ (placeholder Supabase address, so the request fails on purpose) |
+| `npm run build` | ✅ |
+
+Not tested: a real phone, and on screen the new `errLoad`, `errRateLimit`, `errBadCode`,
+`markAllShipped`, `markedShipped` and `markedShippedFailed` strings (these need a real Supabase project
+or a CSV export run). The text was checked in `lib/i18n.js` only.
+
+Screenshots are in `screenshots/`, English plus `-ur` Urdu versions at 360px. The folder is git-ignored,
+so they stay on this computer and are not on GitHub.
