@@ -2,11 +2,14 @@
 import { ImageResponse } from 'next/og';
 
 export function generateStaticParams() {
-  return [{ size: '192' }, { size: '512' }];
+  return [{ size: '192' }, { size: '512' }, { size: 'maskable' }];
 }
 
 export async function GET(_request, { params }) {
-  const size = (await params).size === '512' ? 512 : 192;
+  const name = (await params).size;
+  const size = name === '192' ? 192 : 512;
+  // Android crops maskable icons to a circle or other shape, so that letter stays small and in the middle.
+  const letter = name === 'maskable' ? 0.42 : 0.6;
   return new ImageResponse(
     (
       <div
@@ -18,11 +21,11 @@ export async function GET(_request, { params }) {
           justifyContent: 'center',
           background: '#1F4D3A',
           color: '#FFF6E6',
-          fontSize: size * 0.4,
+          fontSize: size * letter,
           fontWeight: 700,
         }}
       >
-        CC
+        P
       </div>
     ),
     { width: size, height: size }

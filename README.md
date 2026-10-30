@@ -1,4 +1,6 @@
-# COD Confirmer
+# Pakka
+
+**Confirmed orders. Fewer refusals.**
 
 A phone-first web app for small Pakistani sellers who take orders on Instagram and WhatsApp.
 Confirm every cash-on-delivery order on WhatsApp **before** it ships, and remember who refused before.
@@ -93,7 +95,7 @@ Supabase gives you a database and email login for free.
 
 1. Go to **https://supabase.com**, click **Start your project**, sign up (GitHub or email).
 2. Click **New project**.
-   - **Name:** `cod-confirmer`
+   - **Name:** `pakka`
    - **Database password:** click *Generate*, then save it in a safe place (you won't need it day to day).
    - **Region:** pick the one closest to Pakistan, for example **Mumbai** (or Singapore).
    - Click **Create new project** and wait about a minute.
@@ -143,7 +145,7 @@ Vercel hosts the app for free. It takes the code from GitHub, so we put it there
 
 ### 4a. Upload the code to GitHub
 1. Make a free account at **https://github.com**.
-2. Click **+ → New repository**. Name: `cod-confirmer`. Choose **Private**. Don't tick any boxes. Click **Create repository**.
+2. Click **+ → New repository**. Name: `pakka`. Choose **Private**. Don't tick any boxes. Click **Create repository**.
 3. In your terminal, in this folder, run these one by one (replace `YOUR-USERNAME`):
    ```bash
    git init
@@ -152,13 +154,13 @@ Vercel hosts the app for free. It takes the code from GitHub, so we put it there
    git add .
    ```
    ```bash
-   git commit -m "COD Confirmer version one"
+   git commit -m "Pakka version one"
    ```
    ```bash
    git branch -M main
    ```
    ```bash
-   git remote add origin https://github.com/YOUR-USERNAME/cod-confirmer.git
+   git remote add origin https://github.com/YOUR-USERNAME/pakka.git
    ```
    ```bash
    git push -u origin main
@@ -168,15 +170,15 @@ Vercel hosts the app for free. It takes the code from GitHub, so we put it there
 
 ### 4b. Deploy on Vercel
 1. Go to **https://vercel.com**, click **Sign up**, and choose **Continue with GitHub**.
-2. Click **Add New… → Project**, find `cod-confirmer`, click **Import**.
+2. Click **Add New… → Project**, find `pakka`, click **Import**.
 3. Open **Environment Variables** and add the same two lines from your `.env.local`:
    - `NEXT_PUBLIC_SUPABASE_URL` = your project URL
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = your anon / publishable key
-4. Click **Deploy**. After a minute you get an address like `https://cod-confirmer-abc.vercel.app`.
+4. Click **Deploy**. After a minute you get an address like `https://pakka-abc.vercel.app`.
 
 ### 4c. Tell Supabase your new address
 Back in Supabase: **Authentication → URL Configuration**.
-- **Site URL:** change it to your Vercel address, e.g. `https://cod-confirmer-abc.vercel.app`
+- **Site URL:** change it to your Vercel address, e.g. `https://pakka-abc.vercel.app`
 - **Redirect URLs:** add the same address, and keep `http://localhost:3000` so testing on your computer keeps working.
 
 Click **Save**. Without this, the link inside the login email would send people to the wrong place.

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useLang } from '@/lib/i18n';
 import LangToggle from './LangToggle';
+import Brand from './Brand';
 
 const RESEND_SECONDS = 60;
 
@@ -72,9 +73,7 @@ export default function Login({ onTryDemo, linkFailed }) {
       </div>
 
       <main className="welcome-main">
-        <div className="monogram" aria-hidden="true">
-          CC
-        </div>
+        <Brand />
         <h1>{t('headline')}</h1>
         <p className="lede">{t('lede')}</p>
 
@@ -126,7 +125,7 @@ export default function Login({ onTryDemo, linkFailed }) {
         )}
       </main>
 
-      <p className="welcome-foot">{t('welcomeFoot')}</p>
+      <p className="welcome-foot">{t('slogan')}</p>
     </div>
   );
 }

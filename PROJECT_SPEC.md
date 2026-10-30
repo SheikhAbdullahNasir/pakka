@@ -1,4 +1,6 @@
-# COD Confirmer: Project Spec
+# Pakka: Project Spec
+
+Confirmed orders. Fewer refusals.
 
 Living document. Read this together with `CURRENT_STATE.md` before making changes.
 `CURRENT_STATE.md` describes what the code does today. This file describes what it should become.
@@ -29,6 +31,7 @@ A mobile-first web app for small Pakistani sellers who take cash-on-delivery ord
 | Today view | Shows all orders that need action, not only orders created today |
 | Courier CSV | Generic columns, no courier-specific formats |
 | Login | Magic link only. Free plan locks email templates; custom SMTP stays out of scope. |
+| Brand | Name: Pakka. Slogan: 'Confirmed orders. Fewer refusals.' (Urdu: 'Pakke orders. Kam refusals.'). Logo: placeholder 'P' tile until a logo is designed. |
 
 ---
 
@@ -89,7 +92,7 @@ In the "···" sheet, all six chips use a light background, so none looks like 
 ### 3.5 Theme
 
 - Force light mode: `color-scheme: light`, remove all `prefers-color-scheme: dark` styles.
-- `theme-color` meta and PWA manifest background: `#F6EFE3`. PWA icon: `#1F4D3A` background with a cream "CC" monogram.
+- `theme-color` meta and PWA manifest background: `#F6EFE3`. PWA icon: `#1F4D3A` background with a cream "P" monogram (placeholder until a logo is designed), plus a maskable version with safe padding.
 
 ---
 
@@ -98,14 +101,14 @@ In the "···" sheet, all six chips use a light background, so none looks like 
 ### 4.1 Welcome / login
 
 - Small language chip top right (EN / Urdu).
-- "CC" monogram tile.
+- "P" monogram tile with "Pakka" as a small wordmark next to it.
 - Headline: "Stop paying for refused COD orders".
 - One-line description: confirm every order on WhatsApp before it ships, and get warned about customers who refused before.
 - Primary button: **Try the demo**. Helper text below: demo needs no account.
 - Secondary (outline) button: **Log in with email**. Tapping it reveals the email field in place.
 - After sending, this shows in place: "Check your email and tap the sign-in link. Open it on this phone.", the email it was sent to, a **Send again** button with a 60-second cooldown, and a "Use a different email" link.
 - Returning from the link signs the seller in and lands on Today, with nothing left in the address. A link that expired or was already used returns to this screen with a friendly message.
-- Footer line: made for Instagram and WhatsApp sellers in Pakistan. It stays at the bottom, and the content block is centered vertically in the space above it.
+- Footer line: the slogan, which switches language with the toggle. It stays at the bottom, and the content block is centered vertically in the space above it.
 - When Supabase is not configured in development, hide the email option and keep demo only. No red error box on this screen.
 
 ### 4.2 App shell

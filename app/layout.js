@@ -10,8 +10,8 @@ const sans = Plus_Jakarta_Sans({
 });
 
 export const metadata = {
-  title: 'COD Confirmer',
-  description: 'Confirm cash-on-delivery orders on WhatsApp before they ship.',
+  title: 'Pakka · Confirmed orders. Fewer refusals.',
+  description: 'Confirmed orders. Fewer refusals. Confirm cash-on-delivery orders on WhatsApp before they ship.',
 };
 
 export const viewport = {

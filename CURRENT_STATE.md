@@ -1,4 +1,11 @@
-# COD Confirmer: Current State (audit, 2026-10-29; updated 2026-10-30 after Phase 3 part 1)
+# Pakka: Current State (audit, 2026-10-29; updated 2026-10-30 after the rename)
+
+Confirmed orders. Fewer refusals.
+
+**Rename to Pakka (2026-10-30).** The app was called COD Confirmer until now. The name, slogan, "P" tile
+and icons changed; features, layout and colours did not. The localStorage keys keep their old
+`cod-confirmer-*` names on purpose, so existing demo data and language choice survive. Section 14 lists
+what was tested.
 
 **Phase 3 part 1 (2026-10-30).** Login is now magic link only, and the app was tested for the first time
 against a real Supabase project (login, saving, refusal warnings, settings, RLS with two accounts).
@@ -57,11 +64,12 @@ app/
   globals.css            all styles and colour variables (light mode only; dark mode is a later phase)
   manifest.js            PWA manifest ("Add to Home screen")
   icon.svg               favicon
-  pwa-icon/[size]/route.js  generates 192/512 PNG icons at build time
+  pwa-icon/[size]/route.js  generates 192, 512 and maskable PNG icons at build time
 components/
   App.js                 login check, demo on/off, config-error screen, data loading, tabs, toast/undo, CSV export
   Login.js               email sign-in link + "Try demo" button
   LangToggle.js          "EN | Urdu" language chip
+  Brand.js               "P" tile and "Pakka" wordmark
   Icons.js               bottom bar icons
   OrderForm.js           add / edit order sheet
   OrderCard.js           one order + main action button, and the "···" bottom sheet
@@ -248,7 +256,7 @@ Not covered / always English:
 - Language chip labels "EN" / "Urdu" and the message-language buttons "Roman Urdu" / "English"
   (intentional).
 - City quick-pick chips (Karachi, Lahore, …) are city names, the same in both languages.
-- App name "COD Confirmer", the `aria-label="Language"`, the amount placeholder "2,500", "Rs", the "CC" monogram.
+- App name "Pakka", the `aria-label="Language"`, the amount placeholder "2,500", "Rs", the "P" monogram.
 - `<html lang>` now follows the toggle (`en` / `ur`), set from `App.js`. The server-rendered HTML
   still starts as `lang="en"` until the page loads.
 - The app always starts in English for a split second before the saved language loads
@@ -293,11 +301,11 @@ No `TODO` or `FIXME` comments exist in the code.
 |---|---|
 | Common cities list (16 Pakistani cities; the first 7 are quick-pick chips) | `components/OrderForm.js` |
 | Message templates (Roman Urdu and English) | `lib/messages.js` |
-| Colours: all as variables in `app/globals.css` (table in `PROJECT_SPEC.md` 3.1/3.2). Browser bar / PWA background `#F6EFE3`, icon `#1F4D3A` with cream "CC" | `app/layout.js`, `app/manifest.js`, `app/icon.svg`, `app/pwa-icon/[size]/route.js` |
+| Colours: all as variables in `app/globals.css` (table in `PROJECT_SPEC.md` 3.1/3.2). Browser bar / PWA background `#F6EFE3`, icon `#1F4D3A` with cream "P" | `app/layout.js`, `app/manifest.js`, `app/icon.svg`, `app/pwa-icon/[size]/route.js` |
 | Load limit 1000 orders; page size 50 | `lib/data.js`, `components/OrdersView.js` |
 | Undo/toast 5 s; 400 ms delay before "mark shipped?" | `components/App.js` |
 | Settings preview sample (Ayesha, 2 lawn suits, Rs 4500, Lahore) | `components/SettingsView.js`, `lib/i18n.js` |
-| localStorage keys `cod-confirmer-lang`, `cod-confirmer-demo`, `cod-confirmer-demo-on` | `App.js`, `lib/data.js` |
+| localStorage keys `cod-confirmer-lang`, `cod-confirmer-demo`, `cod-confirmer-demo-on` (old name kept on purpose, so saved demo data and language survive the rename) | `App.js`, `lib/data.js` |
 | Demo sample orders (11: names, phones, cities, items) | `lib/data.js` (`sampleData`) |
 | Number format `en-PK`, CSV date `en-GB` (dd/mm/yyyy) | `lib/messages.js`, `lib/csv.js` |
 | Pakistani-only phone rules | `lib/phone.js`, `supabase/schema.sql` |
@@ -339,7 +347,7 @@ git-ignored (`.gitignore` line 6), and has never been committed (**verified**).
 ## 8. Git and deployment
 
 - **Git:** ✅ Yes. One branch, `main`. Every change is committed and pushed to it.
-- **GitHub:** ✅ Remote `origin` = `https://github.com/SheikhAbdullahNasir/cod-confirmer.git`.
+- **GitHub:** ✅ Remote `origin` = `https://github.com/SheikhAbdullahNasir/pakka.git` (renamed from `cod-confirmer` on 2026-10-30).
   The public GitHub API returned 404 for the repo at audit time, which means it is **private** (or not
   visible without login).
 - **Vercel / any deployment:** ❌ **No evidence of a deployment.** There is no `.vercel` folder, no
@@ -350,7 +358,7 @@ git-ignored (`.gitignore` line 6), and has never been committed (**verified**).
   `schema.sql` and put the two values in `.env.local`. It currently holds test data: account one has 6
   test orders and a test shop name, account two is empty. Nothing connects it to a live site yet.
 - **Build:** ✅ `npm run build` succeeds (Next.js 16.4.3, Turbopack; re-checked in Phase 3 part 1). Routes: `/` (static),
-  `/manifest.webmanifest`, `/icon.svg`, `/pwa-icon/192`, `/pwa-icon/512`.
+  `/manifest.webmanifest`, `/icon.svg`, `/pwa-icon/192`, `/pwa-icon/512`, `/pwa-icon/maskable`.
 
 ---
 
@@ -537,3 +545,34 @@ would have needed another email; the evidence is the 0 rows affected that Supaba
 pressing Send again for real; a successful link while demo is on; a real file download; WhatsApp opening; a
 real phone; a live site or Vercel; the rejected-email message; the new Urdu strings on the used-link
 message (checked in `lib/i18n.js` only).
+
+---
+
+## 14. Rename to Pakka: what was tested (2026-10-30)
+
+Browser: the Claude desktop app's built-in browser at 360×780 and 412×860, in English and Roman Urdu. Today
+and Settings were checked on the dev server. Welcome and setup-error were checked on production builds, with
+and without the Supabase settings. The welcome screen was also checked at 360×640.
+
+| Check | Result |
+|---|---|
+| No sideways scroll, no clipped text, no tap target under 48px: welcome, Today, Settings, setup-error (both widths, both languages) | ✅ |
+| Welcome: "P" tile with "Pakka" next to it. The slogan replaces the old footer line, so the screen is no taller, and it switches with the language | ✅ |
+| Welcome with the email field and the error message open, 360×640: nothing clipped, but the page scrolls up and down (727px tall in English, 761px in Urdu). It fits at 360×780 and 412×860 | 🟡 Only on short phones. The tile row is the same height as the old tile, so the rename added no height |
+| Setup-error screen: same tile, wordmark and slogan | ✅ |
+| Tab title "Pakka · Confirmed orders. Fewer refusals.", meta description with the slogan, favicon is the "P" tile | ✅ |
+| Manifest: name and short name "Pakka", description with the slogan, a maskable icon added | ✅ |
+| Existing demo data under the unchanged `cod-confirmer-demo` key: all 11 orders still there, and unchanged after moving around and switching language. Language choice kept | ✅ |
+| New demo on a clean browser: 11 orders, data survives a reload | ✅ |
+| Expired link message in Urdu shows the new `errLinkExpired` | ✅ (made-up error address) |
+| `npm run build` | ✅ |
+| `npm test` | Not run: the project has no test script |
+
+**Not tested:** installing the icon on a real phone, so how Android crops the maskable icon was not seen;
+a real phone; a live site.
+
+Left with the old name on purpose: the localStorage keys, and the local folder on this computer, which is
+still called `COD Confirmer`. The Supabase project keeps whatever name it was given, which the app doesn't use.
+
+The PNG home-screen icons draw "P" in a regular-weight font, because the icon generator only has that font
+built in. The favicon and welcome tile are bold. This is left as is, because the tile is a placeholder.

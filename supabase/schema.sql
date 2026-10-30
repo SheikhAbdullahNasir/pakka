@@ -1,4 +1,4 @@
--- COD Confirmer database
+-- Pakka database
 -- Paste this whole file into Supabase -> SQL Editor -> New query, then press "Run".
 -- It is safe to run more than once.
 

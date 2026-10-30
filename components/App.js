@@ -7,6 +7,7 @@ import { LangContext, makeT, useLang } from '@/lib/i18n';
 import { ordersToCsv, downloadCsv } from '@/lib/csv';
 import Login from './Login';
 import LangToggle from './LangToggle';
+import Brand from './Brand';
 import OrderForm from './OrderForm';
 import TodayView from './TodayView';
 import OrdersView from './OrdersView';
@@ -112,15 +113,13 @@ function ConfigError() {
         <LangToggle />
       </div>
       <main className="welcome-main">
-        <div className="monogram" aria-hidden="true">
-          CC
-        </div>
+        <Brand />
         <h1>{t('configErrorTitle')}</h1>
         <p className="lede">{t('configErrorBody')}</p>
         <pre className="code-block">{'NEXT_PUBLIC_SUPABASE_URL\nNEXT_PUBLIC_SUPABASE_ANON_KEY'}</pre>
         <p className="muted">{t('configErrorFix')}</p>
       </main>
-      <p className="welcome-foot">COD Confirmer</p>
+      <p className="welcome-foot">{t('slogan')}</p>
     </div>
   );
 }
