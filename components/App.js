@@ -1,7 +1,7 @@
 'use client';
 // The whole app lives here: it checks login, loads orders, and shows one of the screens.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { supabase, configMissing } from '@/lib/supabase';
+import { supabase, configMissing, linkSignedIn, linkError } from '@/lib/supabase';
 import * as db from '@/lib/data';
 import { LangContext, makeT, useLang } from '@/lib/i18n';
 import { ordersToCsv, downloadCsv } from '@/lib/csv';
@@ -22,6 +22,7 @@ export default function App() {
   const [session, setSession] = useState(undefined); // undefined = still checking
   const [demo, setDemo] = useState(false);
   const [demoRun, setDemoRun] = useState(0); // goes up on "Reset demo" so the screen reloads
+  const [linkFailed, setLinkFailed] = useState(false); // the email link had expired or was already used
 
   useEffect(() => {
     try {
@@ -30,12 +31,21 @@ export default function App() {
     } catch {}
 
     if (configMissing) return;
+    // Tapping the email link means the seller wants their real account, even if demo was left on.
+    if (linkSignedIn || linkError) db.exitDemo();
     setDemo(db.demoWasOn());
     if (!supabase) {
       setSession(null);
       return;
     }
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    setLinkFailed(linkError);
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      // Leave a clean address: no "#", and no error text from a failed link.
+      if (linkSignedIn || linkError) {
+        window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search);
+      }
+    });
     const { data } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
     return () => data.subscription.unsubscribe();
   }, []);
@@ -61,6 +71,7 @@ export default function App() {
 
   const demoActions = {
     start: () => {
+      setLinkFailed(false);
       db.startDemo();
       setDemo(true);
     },
@@ -84,7 +95,7 @@ export default function App() {
       ) : session === undefined ? (
         <div className="center muted">{langValue.t('loading')}</div>
       ) : !session ? (
-        <Login onTryDemo={demoActions.start} />
+        <Login onTryDemo={demoActions.start} linkFailed={linkFailed} />
       ) : (
         <Main key={session.user.id} session={session} />
       )}

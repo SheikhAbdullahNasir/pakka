@@ -28,6 +28,7 @@ A mobile-first web app for small Pakistani sellers who take cash-on-delivery ord
 | Theme | Light mode only for now. Dark mode is a later phase. All colors defined as CSS variables so dark mode can be added later |
 | Today view | Shows all orders that need action, not only orders created today |
 | Courier CSV | Generic columns, no courier-specific formats |
+| Login | Magic link only. Free plan locks email templates; custom SMTP stays out of scope. |
 
 ---
 
@@ -101,7 +102,9 @@ In the "···" sheet, all six chips use a light background, so none looks like 
 - Headline: "Stop paying for refused COD orders".
 - One-line description: confirm every order on WhatsApp before it ships, and get warned about customers who refused before.
 - Primary button: **Try the demo**. Helper text below: demo needs no account.
-- Secondary (outline) button: **Log in with email**. Tapping it reveals the email field and the code step in place.
+- Secondary (outline) button: **Log in with email**. Tapping it reveals the email field in place.
+- After sending, this shows in place: "Check your email and tap the sign-in link. Open it on this phone.", the email it was sent to, a **Send again** button with a 60-second cooldown, and a "Use a different email" link.
+- Returning from the link signs the seller in and lands on Today, with nothing left in the address. A link that expired or was already used returns to this screen with a friendly message.
 - Footer line: made for Instagram and WhatsApp sellers in Pakistan. It stays at the bottom, and the content block is centered vertically in the space above it.
 - When Supabase is not configured in development, hide the email option and keep demo only. No red error box on this screen.
 

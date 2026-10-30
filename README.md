@@ -103,13 +103,13 @@ Supabase gives you a database and email login for free.
    *What this did:* made an `orders` table, a `shops` table, and a `customer_refusals` view, and
    switched on **Row Level Security**, a rule inside the database that means each seller can only
    ever see their own orders, even though everyone uses the same app.
-4. **Make the login email show a code.** Left menu: **Authentication → Emails** (sometimes called
-   *Email Templates*). Open the **Magic Link** template and add this line to the message body:
-   ```
-   <p>Your login code: <strong>{{ .Token }}</strong></p>
-   ```
-   Click **Save**. Do the same for the **Confirm signup** template (first-time users get that one).
-   *Why:* on phones, the email link sometimes opens in a different browser. Typing a code always works.
+4. **Tell Supabase where the login link should go.** Left menu: **Authentication → URL Configuration**.
+   - **Site URL:** `http://localhost:3000`
+   - **Redirect URLs:** add `http://localhost:3000`
+
+   Click **Save**. *Why:* the login email contains a sign-in link, and this is where that link sends
+   people back to. You'll add your live address in Part 4c. You don't need to change the email
+   templates (the free plan doesn't allow it, and the default email already has the link).
 5. **Copy your two keys.** Left menu: **Project Settings → API** (in newer dashboards it's
    **Project Settings → Data API** for the URL and **API Keys** for the key). You need:
    - **Project URL**, which looks like `https://abcdefgh.supabase.co`
@@ -130,7 +130,8 @@ Supabase gives you a database and email login for free.
    ```
 3. Stop the app (`Ctrl + C`) and start it again with `npm run dev`. The app only reads this file when it starts.
 4. Open http://localhost:3000. You should now see the **login screen** instead of demo mode.
-   Type your email, press **Send login code**, check your inbox, and type the code.
+   Press **Log in with email**, type your email, press **Send sign-in link**, then tap the link in
+   the email. Open it in the same browser, and you land on the **Today** screen.
 
 `.env.local` is listed in `.gitignore`, so it won't be uploaded to GitHub. That's on purpose.
 
@@ -175,8 +176,8 @@ Vercel hosts the app for free. It takes the code from GitHub, so we put it there
 
 ### 4c. Tell Supabase your new address
 Back in Supabase: **Authentication → URL Configuration**.
-- **Site URL:** your Vercel address, e.g. `https://cod-confirmer-abc.vercel.app`
-- **Redirect URLs:** add the same address, and also `http://localhost:3000` so testing on your computer keeps working.
+- **Site URL:** change it to your Vercel address, e.g. `https://cod-confirmer-abc.vercel.app`
+- **Redirect URLs:** add the same address, and keep `http://localhost:3000` so testing on your computer keeps working.
 
 Click **Save**. Without this, the link inside the login email would send people to the wrong place.
 
@@ -229,7 +230,8 @@ Save the file, and the running app (`npm run dev`) updates by itself. `git push`
 |---|---|
 | Login screen says Supabase is not connected, or the live site says "Setup is not finished" | The file must be named exactly `.env.local` (with the dot), in this folder. Restart `npm run dev`. On Vercel, check the two Environment Variables, then **Deployments → ⋮ → Redeploy**. |
 | Login email never arrives | Check spam. Supabase's free built-in email only sends **a few emails per hour** and is meant for testing. Before real sellers use it, connect a free email sender: Supabase **Authentication → Emails → SMTP Settings**, using e.g. Resend or Brevo (both have free plans). |
-| "Token has expired or is invalid" | Codes expire after about an hour and can only be used once. Press **Use a different email**, then send a new code. |
+| "That sign-in link has expired or was already used" | Links expire after about an hour and can only be used once. Type your email and send a new link. |
+| The link opens the wrong site or a "can't connect" page | Check **Authentication → URL Configuration** in Supabase (Part 2 step 4 and Part 4c). |
 | Orders don't save, error mentions "permission" or "relation does not exist" | The SQL in Part 2 step 3 didn't run fully. Run `supabase/schema.sql` again (it's safe to repeat). |
 | WhatsApp doesn't open | The number must be a Pakistani mobile (03xx…). On a computer, wa.me opens WhatsApp Web instead. |
 | Supabase project "paused" | Free projects pause after about a week with no use. Open the Supabase dashboard and click **Restore**. Regular daily use keeps it awake. |

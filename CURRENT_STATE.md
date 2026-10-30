@@ -1,4 +1,9 @@
-# COD Confirmer: Current State (audit, 2026-10-29; updated 2026-10-29 after the fixes round)
+# COD Confirmer: Current State (audit, 2026-10-29; updated 2026-10-30 after Phase 3 part 1)
+
+**Phase 3 part 1 (2026-10-30).** Login is now magic link only, and the app was tested for the first time
+against a real Supabase project (login, saving, refusal warnings, settings, RLS with two accounts).
+Section 13 lists what was tested. Items marked **verified** below were checked in that test. Vercel is
+still not set up.
 
 **Action row rule and toast (2026-10-30).** "···" now always shares the last row of action buttons, and
 the status-change toast has new wording in both languages. Section 12 lists what was tested.
@@ -55,7 +60,7 @@ app/
   pwa-icon/[size]/route.js  generates 192/512 PNG icons at build time
 components/
   App.js                 login check, demo on/off, config-error screen, data loading, tabs, toast/undo, CSV export
-  Login.js               email one-time code login + "Try demo" button
+  Login.js               email sign-in link + "Try demo" button
   LangToggle.js          "EN | Urdu" language chip
   Icons.js               bottom bar icons
   OrderForm.js           add / edit order sheet
@@ -87,10 +92,10 @@ README.md                beginner setup guide
 |---|---|---|---|
 | 1 | Add an order in under 20 seconds: name, WhatsApp number, city, items, amount (Rs) | ✅ | `components/OrderForm.js`. Phone field first; returning customers get name/city/address auto-filled; city suggestions list. The "under 20 seconds" goal itself is **unverified** (not timed). Also has an optional Address field. Amount accepts digits and commas, and decimals are rounded to whole rupees (`2,500.50` → 2501); anything else (`2.5k`, `Rs 2500`) shows "Enter the amount in rupees using numbers only, like 2500 or 2,500" (both languages). |
 | 2 | "Send confirmation" opens WhatsApp via wa.me with a Roman Urdu message | ✅ | `lib/messages.js`. Text matches the requested template, plus a city/address line and optional shop name. Available on the form ("Save & send on WhatsApp") and on every Waiting order card. English version also exists (chosen in Settings). "Save & send" now saves first: an empty window is opened during the tap (so phones don't block it), then sent to WhatsApp only after the save succeeds, or closed if the save fails. If the browser blocks even the empty window, WhatsApp opens in the same tab after saving. Tested in the browser with `window.open` stubbed; **not** tested on a real phone browser. |
-| 3 | Statuses Waiting, Confirmed, Cancelled, Shipped, Delivered, Refused, one tap each | ✅ | One main action per card (Send confirmation / Mark confirmed + Remind / Mark shipped / Mark delivered + Mark refused); the "···" button opens a bottom sheet with all six statuses, Open chat in WhatsApp, Edit, Delete. 5-second Undo toast after each change. |
-| 4 | Red warning on a new order if that number refused before, with count | ✅ | Shown in the form as soon as the number is valid, and on every order card. Counts come from the `customer_refusals` view. Counts are per seller only (by design, because of RLS). |
+| 3 | Statuses Waiting, Confirmed, Cancelled, Shipped, Delivered, Refused, one tap each | ✅ **verified** | One main action per card (Send confirmation / Mark confirmed + Remind / Mark shipped / Mark delivered + Mark refused); the "···" button opens a bottom sheet with all six statuses, Open chat in WhatsApp, Edit, Delete. 5-second Undo toast after each change. Status changes, Undo, edit and delete were confirmed in the real database. |
+| 4 | Red warning on a new order if that number refused before, with count | ✅ **verified** | Shown in the form as soon as the number is valid, and on every order card. Counts come from the `customer_refusals` view. Counts are per seller only (by design, because of RLS; a second account saw no warning for the same number). |
 | 5 | Daily view: confirmed orders ready to ship, waiting orders with "Remind" | ✅ / 🟡 | `components/TodayView.js` also shows a "Shipped" section. 🟡 It is not filtered by date: it shows **all** orders currently in those statuses, not only today's. Whether that matches the intent is a judgement call. |
-| 6 | Export confirmed list as CSV for the courier | 🟡 | `lib/csv.js`. Works and offers to mark them Shipped afterwards; the toast now reports the real result ("8 orders marked Shipped", or "8 marked Shipped, 2 failed…"). Columns are generic (Order ID, Customer Name, Phone, City, Address, Items, COD Amount, Order Date); not matched to any specific courier's bulk-upload template (TCS, Leopards, PostEx, etc.). Upload acceptance by any courier is **unverified**. |
+| 6 | Export confirmed list as CSV for the courier | 🟡 | `lib/csv.js`. Works and offers to mark them Shipped afterwards (**verified** against the real database, with the file captured in the page rather than downloaded); the toast now reports the real result ("8 orders marked Shipped", or "8 marked Shipped, 2 failed…"). Columns are generic (Order ID, Customer Name, Phone, City, Address, Items, COD Amount, Order Date); not matched to any specific courier's bulk-upload template (TCS, Leopards, PostEx, etc.). Upload acceptance by any courier is **unverified**. |
 
 ### Rules
 
@@ -99,7 +104,7 @@ README.md                beginner setup guide
 | Roman Urdu / English toggle | 🟡 | Covers nearly all UI text; gaps listed in section 6. |
 | Big buttons | ✅ | Every button and input is at least 48px tall (main buttons and inputs 52px); body text 16px, meta text 14px. Checked in the browser at 360px and 412px. |
 | Works on a cheap Android phone | 🟡 | Light bundle, no heavy libraries, PWA manifest present. No service worker, so nothing works offline. Not tested on a real low-end device (**unverified**). |
-| Login with email so data survives a lost phone | ✅ (code) | Email one-time code via Supabase. Working end to end is **unverified** (no Supabase project is connected on this machine; see section 8). |
+| Login with email so data survives a lost phone | ✅ **verified** | Email sign-in link via Supabase. Two accounts logged in end to end on `localhost`. Signing in again on the same account was skipped to save emails (persistence was checked by reloading and reading the database). Not tested on a real phone or a live site. |
 | Never message a customer automatically | ✅ | The app only builds wa.me links; the seller presses send in WhatsApp. |
 
 ### Version two (requested for later)
@@ -114,7 +119,7 @@ README.md                beginner setup guide
 | Item | Status |
 |---|---|
 | Next.js | ✅ |
-| Supabase database | ✅ schema written; ❓ whether it has been run in a real Supabase project is **unverified** |
+| Supabase database | ✅ **verified**: `schema.sql` was run in a real Supabase project by Abdullah, and the app reads and writes it |
 | Deployed free on Vercel | ❌ No evidence of a deployment (see section 8) |
 | Beginner explanations | ✅ `README.md` is a step-by-step beginner guide |
 
@@ -122,8 +127,9 @@ README.md                beginner setup guide
 
 ## 3. Database schema and row-level security
 
-Source: `supabase/schema.sql`. This describes what the file **would** create. Whether it has
-actually been run in a Supabase project is **unverified**.
+Source: `supabase/schema.sql`. It has been run in a real Supabase project (**verified**: the app's
+inserts, updates, deletes, the view and the shop upsert all work against it). Schema unchanged in
+Phase 3 part 1.
 
 ### Table `public.orders`
 
@@ -167,7 +173,10 @@ created `with (security_invoker = true)` so it obeys the `orders` RLS policies.
 | `shops` | ✅ Yes | select / insert / update `to authenticated`, `user_id = auth.uid()`. No delete policy (so sellers cannot delete their shop row; probably fine). |
 | `customer_refusals` (view) | n/a (views have no RLS) | `security_invoker = true`, so it inherits `orders` RLS. Granted `select` to `authenticated`. |
 
-Whether RLS is **actually on** in a live project: **unverified** (depends on schema.sql having been run).
+RLS in the live project: ✅ **verified** with two accounts and signed out (section 13). A second account
+saw none of the first account's orders, refusal counts or shop, and reading, updating or deleting the
+first account's order by id returned 0 rows. Signed out, reads and updates returned 0 rows and an insert
+was refused (401).
 
 ---
 
@@ -191,14 +200,22 @@ Whether RLS is **actually on** in a live project: **unverified** (depends on sch
 
 ## 5. Auth setup
 
-- **Email one-time code (OTP), with magic link as a fallback.** No passwords.
+- **Magic link only** (**verified**). No passwords and no code. On the free plan without custom SMTP,
+  Supabase email templates can't be edited, so emails contain only a sign-in link.
 - `components/Login.js` calls `supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } })`,
-  then `supabase.auth.verifyOtp({ email, token, type: 'email' })` with the typed code.
-- The code only appears in the email if the seller edits the Supabase "Magic Link" and
-  "Confirm signup" email templates to include `{{ .Token }}` (README Part 2, step 4). Whether that
-  was done is **unverified**.
-- Clicking the link in the email instead should also work through supabase-js's default URL
-  session detection (**unverified**; requires Site URL / Redirect URLs set in Supabase).
+  then shows "Check your email and tap the sign-in link. Open it on this phone.", the email address, a
+  **Send again** button with a 60-second cooldown (counted from the clock, so it keeps correct time
+  while the seller is in their email app), and a "Use a different email" link.
+- Returning from the link: supabase-js picks up the session from the address (its default "implicit"
+  flow, so the link works in any browser, and logs in whichever browser opened it). `lib/supabase.js`
+  notes what the address contained before the client removes it, and `App.js` then clears what
+  supabase-js leaves behind (a bare `#`, or a failed link's error text). The seller lands on Today.
+- A link that expired or was already used returns to the welcome screen with the email field open and
+  `errLinkExpired`.
+- Tapping a link turns demo mode off, so a seller who tried the demo while waiting for the email lands
+  in their real account. (Tested with a failed link only. It was not tested with a successful link.)
+- Supabase **URL Configuration** has Site URL and Redirect URLs set to `http://localhost:3000`
+  (set by Abdullah). The dev server must run on port 3000 for links to return to it.
 - Sign-ups are open: anyone with the URL can create an account (Supabase default). Each account
   only sees its own data because of RLS.
 - **Demo mode is explicit.** The login screen has a **Try demo** button. Demo stores everything in
@@ -224,9 +241,10 @@ saved in localStorage (`cod-confirmer-lang`). All labels go through `t()` in `li
 `ur` dictionary has an entry for every `en` key, so almost the whole UI switches.
 
 Not covered / always English:
-- Supabase error messages are no longer shown. Login errors become "Too many tries…", "That code is
-  wrong or has expired…" or "Something went wrong…"; load and save errors use fixed friendly text.
-  All of these are translated. The raw error goes to the browser console only.
+- Supabase error messages are no longer shown. Login errors become "Too many tries…" or "Something went
+  wrong…", and a failed link shows "That sign-in link has expired or was already used…"; load and save
+  errors use fixed friendly text. All of these are translated. The raw error goes to the browser console
+  only.
 - Language chip labels "EN" / "Urdu" and the message-language buttons "Roman Urdu" / "English"
   (intentional).
 - City quick-pick chips (Karachi, Lahore, …) are city names, the same in both languages.
@@ -264,6 +282,10 @@ No `TODO` or `FIXME` comments exist in the code.
 7. **No live sync between devices.** A second phone/computer sees changes only after reload.
 8. Two quick status taps on the same order can race: each update is sent independently, and the
    last response to arrive wins (**unverified** in practice).
+9. **Misleading message for a rejected email address.** If Supabase rejects an address as invalid, the
+   seller sees `errNetwork` ("Check your internet…"), because the old `errBadCode` branch was removed
+   with the code step. Found by reading the code, not reproduced. Left as is for now, by Abdullah's
+   decision.
 
 ### Hardcoded values
 
@@ -281,8 +303,8 @@ No `TODO` or `FIXME` comments exist in the code.
 | Pakistani-only phone rules | `lib/phone.js`, `supabase/schema.sql` |
 | CSV Order ID = first 8 chars of the UUID (not a sequential number) | `lib/csv.js` |
 
-No secrets are hardcoded. Supabase URL/key come from env vars; `.env.local` is git-ignored and
-does not exist on this machine.
+No secrets are hardcoded. Supabase URL/key come from env vars; `.env.local` exists on this machine, is
+git-ignored (`.gitignore` line 6), and has never been committed (**verified**).
 
 ### Things that would break or hurt in production
 
@@ -290,37 +312,44 @@ does not exist on this machine.
    `NEXT_PUBLIC_SUPABASE_ANON_KEY` shows a configuration error screen. The env vars are baked in at
    build time, so after adding them on Vercel you must redeploy. Demo mode is still available on a
    configured live site via **Try demo** (data stays in that browser, and the banner says so).
-2. **Supabase's built-in email is rate-limited** (a few emails per hour). Real sellers will fail to
-   log in until custom SMTP (e.g. Resend, Brevo) is set up. README mentions this; setup is
-   **unverified**.
+2. **Supabase's built-in email is rate-limited** (**verified**: the third email within about 15 minutes
+   was refused, and one about an hour after the first went through; that fits about two per hour for the
+   whole project). A few sellers logging in together would get "Too many tries". Custom SMTP would fix it
+   but stays out of scope for now.
 3. **Supabase free projects pause after ~1 week of no use.** The app would show load errors until
    someone restores it.
-4. **Supabase Site URL / Redirect URLs** must be set to the Vercel address, or email links go to
-   the wrong place.
+4. **Supabase Site URL / Redirect URLs** must be changed to the Vercel address (keep
+   `http://localhost:3000` in Redirect URLs), or email links go back to `localhost:3000`. Not tested yet.
+   Magic link makes this critical: there is no other way to log in.
 5. **No offline support.** On a weak connection, saves fail with "Could not save" (the screen rolls
    back the change).
 6. Open sign-ups: anyone can create an account (data is still isolated by RLS).
 7. No tests, no error boundary, no monitoring/logging.
+8. **Links used up before the seller taps them.** Each link works once, and simply opening it uses it up.
+   An email security scanner or link preview that opens it first would leave the seller with the "expired
+   or already used" message. This is the biggest risk of magic-link-only login. A browser request did use
+   up a link this way during testing (section 13). Not seen from a real scanner yet.
+9. **Link opening in the wrong browser.** If Gmail or another app opens the link in its own built-in
+   browser, the seller is logged in there, not in Chrome or the home-screen app. The on-screen text asks
+   them to open it on this phone, but it can't control which browser opens. Not tested on a real phone.
+10. **Rejected email addresses** show a misleading "check your internet" message (section 7, bug 9).
 
 ---
 
 ## 8. Git and deployment
 
-- **Git:** ✅ Yes. One branch `main`, one commit `dafd7b7 "COD Confirmer version one"`. Working tree
-  was clean at audit start.
+- **Git:** ✅ Yes. One branch, `main`. Every change is committed and pushed to it.
 - **GitHub:** ✅ Remote `origin` = `https://github.com/SheikhAbdullahNasir/cod-confirmer.git`.
-  `git ls-remote` shows the remote `main` at the same commit `dafd7b7`, so GitHub is up to date.
-  The public GitHub API returns 404 for the repo, which means it is **private** (or not visible
-  without login).
+  The public GitHub API returned 404 for the repo at audit time, which means it is **private** (or not
+  visible without login).
 - **Vercel / any deployment:** ❌ **No evidence of a deployment.** There is no `.vercel` folder, no
   `vercel.json`, and earlier chat sessions only mention placeholder addresses
   (`cod-confirmer-abc.vercel.app`). Whether a Vercel project was created through the website is
   **unverified**.
-- **Supabase:** ❓ **No evidence it is connected.** There is no `.env.local` on this machine, so
-  `npm run dev` here runs in demo mode. Earlier chats only mention the placeholder
-  `abcdefgh.supabase.co`. Whether a Supabase project exists and `schema.sql` was run is
-  **unverified**.
-- **Build:** ✅ `npm run build` succeeds (Next.js 16.4.3, Turbopack; re-checked after the fixes round). Routes: `/` (static),
+- **Supabase:** ✅ **Connected on this machine (verified).** Abdullah created a project, ran
+  `schema.sql` and put the two values in `.env.local`. It currently holds test data: account one has 6
+  test orders and a test shop name, account two is empty. Nothing connects it to a live site yet.
+- **Build:** ✅ `npm run build` succeeds (Next.js 16.4.3, Turbopack; re-checked in Phase 3 part 1). Routes: `/` (static),
   `/manifest.webmanifest`, `/icon.svg`, `/pwa-icon/192`, `/pwa-icon/512`.
 
 ---
@@ -424,3 +453,87 @@ Urdu, on the dev server in demo mode. Every order card type was checked, on Toda
 | `npm run build` | ✅ |
 
 Not tested: a real phone. Replaced screenshots: `2-today-ur.jpg`, `4-orders-filter.jpg`, `4-orders-filter-ur.jpg`.
+
+---
+
+## 13. Phase 3 part 1: what was tested (2026-10-30)
+
+Browser: the Claude desktop app's built-in browser at 360×780 on the dev server (`http://localhost:3000`),
+against the real Supabase project. Two real accounts. Results were read from the screen and from the
+database. For the RLS checks, a temporary line exposed the Supabase client in the browser console; it was
+removed before commit and confirmed gone with `git diff`.
+
+### Login
+
+| Check | Result |
+|---|---|
+| Real link request: Supabase accepts it, screen shows the message, email address, cooldown and "Use a different email" | ✅ |
+| Login from a real link, opened in the browser by Abdullah, accounts one and two: lands on Today, no demo strip, address is `http://localhost:3000/` with no tokens or `#` | ✅ |
+| Session survives a reload | ✅ |
+| Send again: disabled, counts down, enabled again when it reaches 0 | ✅ |
+| Real rate limit: third email refused, "Too many tries" shown | ✅ |
+| Internet-failure message, English and Urdu | ✅ (fake response) |
+| Rate-limit message in Urdu | ✅ (fake response) |
+| Used or expired link: message shown, email field open, address cleaned, demo switched off | ✅ (real used link seen by Abdullah; the detailed check used a made-up error address) |
+| Long email wraps, no sideways scroll, buttons at least 48px | ✅ |
+| Sign out: back to welcome, session removed | ✅ |
+
+**The first real link was used up by Claude's own browser request, not by an app bug.** Claude tried to
+open the pasted link, and the browser tool reported "denied or failed". Supabase's records show the
+account was confirmed at 11:45:53 UTC, matching that attempt to within about a second, so the request most
+likely reached Supabase and used up the one-time link even though the return to the app never landed.
+Abdullah then saw the correct "expired or already used" message, requested a new link and logged in with
+it. The fake-response tests did not cause the message. The same thing could happen to sellers through
+email scanners (section 7, risk 8).
+
+### App, signed in as account one
+
+| Check | Result |
+|---|---|
+| Create orders (Save only, 3 orders; 1 throwaway order for delete) | ✅ rows confirmed in the database |
+| Save and send: saved with message count 1 | ✅ (`window.open` faked, so WhatsApp itself was not opened) |
+| Status change, then Undo, then change again | ✅ database went confirmed → waiting → confirmed |
+| Change status from the "···" sheet | ✅ |
+| Edit: one "Save changes" button; amount and items updated; message count unchanged | ✅ |
+| Delete: gone from the screen and the database | ✅ |
+| CSV export: correct 3 rows, then mark as shipped: "3 orders marked shipped" and all shipped in the database | ✅ (file captured in the page, no real download) |
+| Reload: orders, statuses and section counts all came back | ✅ |
+| Refusal warning: refused twice, form and card show "Refused once before", then "Refused 2 times before"; the view's count is 2; returning-customer auto-fill works | ✅ |
+| Refused order can't be deleted | ✅ message shown |
+| Settings: shop name and message language survive a reload; preview follows them | ✅ |
+| No sideways scroll at 360px | ✅ |
+
+### RLS
+
+| Check | Signed out | Account two |
+|---|---|---|
+| Read all orders | 0 rows | 0 rows |
+| Read account one's order by id | 0 rows | 0 rows |
+| Update that order | 0 rows | 0 rows |
+| Delete that order | not tried | 0 rows |
+| `customer_refusals` view | 0 rows | 0 rows |
+| `shops` | 0 rows | 0 rows |
+| Insert an order | refused (401) | not tried |
+
+Account two's app: empty Today, empty shop name, and no refusal warning or auto-fill for the number account
+one refused twice. The update and delete attempts were not followed by a read as account one, because that
+would have needed another email; the evidence is the 0 rows affected that Supabase returned.
+
+### Try demo on the configured site
+
+| Check | Result |
+|---|---|
+| 11 sample orders, demo strip shown, changes saved to `cod-confirmer-demo` in localStorage | ✅ |
+| No requests to Supabase while in demo, and no login token stored | ✅ |
+
+### Other
+
+| Check | Result |
+|---|---|
+| `npm run build` | ✅ |
+| `npm test` | Not run: the project has no test script (section 1) |
+
+**Not tested:** signing in again on the same account (skipped by Abdullah's decision to save emails);
+pressing Send again for real; a successful link while demo is on; a real file download; WhatsApp opening; a
+real phone; a live site or Vercel; the rejected-email message; the new Urdu strings on the used-link
+message (checked in `lib/i18n.js` only).

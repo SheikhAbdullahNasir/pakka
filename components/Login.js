@@ -1,28 +1,39 @@
 'use client';
-// Welcome screen: try the demo, or log in by email with a one-time code (no password to forget).
-import { useState } from 'react';
+// Welcome screen: try the demo, or log in with a link sent by email (no password to forget).
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useLang } from '@/lib/i18n';
 import LangToggle from './LangToggle';
+
+const RESEND_SECONDS = 60;
 
 // Supabase's own error text is technical English, so show a friendly translated one instead.
 function friendlyError(error) {
   console.error(error);
   const text = (error.message || '').toLowerCase();
   if (error.status === 429 || text.includes('rate limit') || text.includes('too many')) return 'errRateLimit';
-  if (text.includes('expired') || text.includes('invalid') || text.includes('token')) return 'errBadCode';
   return 'errNetwork';
 }
 
-export default function Login({ onTryDemo }) {
+export default function Login({ onTryDemo, linkFailed }) {
   const { t } = useLang();
   const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
-  const [step, setStep] = useState(null); // null = button only, 'email', 'code'
+  const [step, setStep] = useState(linkFailed ? 'email' : null); // null = button only, 'email', 'sent'
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(linkFailed ? 'errLinkExpired' : '');
+  const [resendAt, setResendAt] = useState(0);
+  const [wait, setWait] = useState(0);
 
-  async function sendCode(e) {
+  // Counts from the clock, because phones pause timers while the seller is in their email app.
+  useEffect(() => {
+    if (!resendAt) return;
+    const tick = () => setWait(Math.max(0, Math.ceil((resendAt - Date.now()) / 1000)));
+    tick();
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
+  }, [resendAt]);
+
+  async function sendLink(e) {
     e.preventDefault();
     setBusy(true);
     setError('');
@@ -31,18 +42,17 @@ export default function Login({ onTryDemo }) {
       options: { emailRedirectTo: window.location.origin },
     });
     setBusy(false);
-    if (error) setError(friendlyError(error));
-    else setStep('code');
+    if (error) {
+      setError(friendlyError(error));
+    } else {
+      setResendAt(Date.now() + RESEND_SECONDS * 1000);
+      setStep('sent');
+    }
   }
 
-  async function verify(e) {
-    e.preventDefault();
-    setBusy(true);
+  function useDifferentEmail() {
     setError('');
-    const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: code.trim(), type: 'email' });
-    setBusy(false);
-    if (error) setError(friendlyError(error));
-    // On success the app notices the new login by itself and opens.
+    setStep('email');
   }
 
   const busyLabel = (label) =>
@@ -80,7 +90,7 @@ export default function Login({ onTryDemo }) {
               {t('loginEmail')}
             </button>
           ) : step === 'email' ? (
-            <form onSubmit={sendCode}>
+            <form onSubmit={sendLink}>
               <label className="field">
                 <span className="label">{t('email')}</span>
                 <input
@@ -94,29 +104,17 @@ export default function Login({ onTryDemo }) {
                 />
               </label>
               <button className="btn outline lg block" disabled={busy}>
-                {busyLabel(t('sendCode'))}
+                {busyLabel(t('sendLink'))}
               </button>
             </form>
           ) : (
-            <form onSubmit={verify}>
-              <p>{t('codeSent', { email })}</p>
-              <label className="field">
-                <span className="label">{t('code')}</span>
-                <input
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  autoFocus
-                  required
-                  maxLength={10}
-                  className="num"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                />
-              </label>
-              <button className="btn outline lg block" disabled={busy}>
-                {busyLabel(t('logIn'))}
+            <form onSubmit={sendLink}>
+              <p role="status">{t('linkSent')}</p>
+              <p className="sent-to">{email.trim()}</p>
+              <button className="btn outline lg block" disabled={busy || wait > 0}>
+                {wait > 0 ? t('sendAgainIn', { n: wait }) : busyLabel(t('sendAgain'))}
               </button>
-              <button type="button" className="btn secondary block" onClick={() => setStep('email')}>
+              <button type="button" className="link-btn" onClick={useDifferentEmail}>
                 {t('changeEmail')}
               </button>
             </form>
