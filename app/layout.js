@@ -1,4 +1,13 @@
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
+
+// Downloaded once at build time and served from this site, so nothing jumps when it loads.
+const sans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  display: 'swap',
+  variable: '--font-sans',
+});
 
 export const metadata = {
   title: 'COD Confirmer',
@@ -8,12 +17,13 @@ export const metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0b7a4b',
+  themeColor: '#F6EFE3',
+  colorScheme: 'light',
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className={sans.variable}>
       <body>{children}</body>
     </html>
   );

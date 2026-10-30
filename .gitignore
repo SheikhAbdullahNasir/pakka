@@ -7,3 +7,6 @@ out
 .vercel
 *.log
 .claude/settings.local.json
+
+# phone-size screenshots for review (not committed)
+screenshots/

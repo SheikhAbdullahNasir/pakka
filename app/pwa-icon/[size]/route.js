@@ -16,13 +16,13 @@ export async function GET(_request, { params }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#0b7a4b',
-          color: 'white',
-          fontSize: size * 0.34,
+          background: '#1F4D3A',
+          color: '#FFF6E6',
+          fontSize: size * 0.4,
           fontWeight: 700,
         }}
       >
-        COD
+        CC
       </div>
     ),
     { width: size, height: size }

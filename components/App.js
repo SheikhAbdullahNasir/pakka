@@ -11,6 +11,8 @@ import OrderForm from './OrderForm';
 import TodayView from './TodayView';
 import OrdersView from './OrdersView';
 import SettingsView from './SettingsView';
+import { OrderActionsSheet } from './OrderCard';
+import { TodayIcon, OrdersIcon, SettingsIcon } from './Icons';
 
 const LANG_KEY = 'cod-confirmer-lang';
 const now = () => new Date().toISOString();
@@ -94,15 +96,20 @@ export default function App() {
 function ConfigError() {
   const { t } = useLang();
   return (
-    <div className="login">
-      <div className="login-top">
+    <div className="welcome">
+      <div className="welcome-top">
         <LangToggle />
       </div>
-      <h1>COD Confirmer</h1>
-      <h2>{t('configErrorTitle')}</h2>
-      <p>{t('configErrorBody')}</p>
-      <pre className="preview">{'NEXT_PUBLIC_SUPABASE_URL\nNEXT_PUBLIC_SUPABASE_ANON_KEY'}</pre>
-      <p className="muted">{t('configErrorFix')}</p>
+      <main className="welcome-main">
+        <div className="monogram" aria-hidden="true">
+          CC
+        </div>
+        <h1>{t('configErrorTitle')}</h1>
+        <p className="lede">{t('configErrorBody')}</p>
+        <pre className="code-block">{'NEXT_PUBLIC_SUPABASE_URL\nNEXT_PUBLIC_SUPABASE_ANON_KEY'}</pre>
+        <p className="muted">{t('configErrorFix')}</p>
+      </main>
+      <p className="welcome-foot">COD Confirmer</p>
     </div>
   );
 }
@@ -114,6 +121,7 @@ function Main({ session, demoActions }) {
   const [shop, setShop] = useState({ shop_name: '', message_lang: 'ur' });
   const [tab, setTab] = useState('today');
   const [form, setForm] = useState(null); // null = closed, {} = new order, { order } = editing
+  const [sheetId, setSheetId] = useState(null); // order whose "···" sheet is open
   const [toast, setToast] = useState(null);
   const [loadError, setLoadError] = useState('');
   const toastTimer = useRef();
@@ -129,7 +137,10 @@ function Main({ session, demoActions }) {
         setRefusals(r);
         if (s) setShop(s);
       })
-      .catch((e) => setLoadError(e.message || String(e)));
+      .catch((e) => {
+        console.error(e);
+        setLoadError(true);
+      });
   }, []);
 
   function showToast(text, undo) {
@@ -151,7 +162,8 @@ function Main({ session, demoActions }) {
     try {
       replaceLocal(await db.updateOrder(id, patch));
       return true;
-    } catch {
+    } catch (e) {
+      console.error(e);
       replaceLocal(before);
       showToast(t('errorGeneric'));
       return false;
@@ -195,7 +207,8 @@ function Main({ session, demoActions }) {
       await db.deleteOrder(order.id);
       setOrders((os) => os.filter((o) => o.id !== order.id));
       refreshRefusals();
-    } catch {
+    } catch (e) {
+      console.error(e);
       showToast(t('errorGeneric'));
     }
   }
@@ -221,55 +234,73 @@ function Main({ session, demoActions }) {
     recordMessage,
     onEdit: (order) => setForm({ order }),
     onDelete: removeOrder,
+    openMore: (order) => setSheetId(order.id),
   };
+  const sheetOrder = sheetId && orders?.find((o) => o.id === sheetId);
+  const title = t('tab' + tab[0].toUpperCase() + tab.slice(1));
+
+  const navButton = (name, Icon) => (
+    <button
+      className={'nav-btn' + (tab === name ? ' on' : '')}
+      aria-current={tab === name ? 'page' : undefined}
+      onClick={() => setTab(name)}
+    >
+      <Icon />
+      {t('tab' + name[0].toUpperCase() + name.slice(1))}
+    </button>
+  );
 
   return (
     <div className="app">
       <header className="topbar">
-        <h1>COD Confirmer</h1>
+        <h1>{title}</h1>
         <LangToggle />
       </header>
 
       {session.demo && (
-        <div className="banner">
-          {t('demoBanner')}
-          <div className="actions">
-            <button className="btn ghost" onClick={demoActions.reset}>
-              {t('resetDemo')}
+        <div className="demo-strip">
+          <span>{t('demoMode')}</span>
+          <span className="links">
+            <button className="link-btn" onClick={demoActions.reset}>
+              {t('resetShort')}
             </button>
-            <button className="btn ghost" onClick={demoActions.exit}>
-              {t('exitDemo')}
+            <span aria-hidden="true">·</span>
+            <button className="link-btn" onClick={demoActions.exit}>
+              {t('exitShort')}
             </button>
-          </div>
+          </span>
         </div>
       )}
-      {loadError && <div className="banner danger">{loadError}</div>}
+      {loadError && (
+        <div className="banner" role="alert">
+          {t('errLoad')}
+        </div>
+      )}
 
       <main className="content">
         {orders === null ? (
           !loadError && <p className="center muted">{t('loading')}</p>
         ) : tab === 'today' ? (
-          <TodayView orders={orders} ctx={ctx} onExport={exportForCourier} />
+          <TodayView orders={orders} ctx={ctx} onExport={exportForCourier} onNew={() => setForm({})} />
         ) : tab === 'orders' ? (
           <OrdersView orders={orders} ctx={ctx} />
         ) : (
-          <SettingsView session={session} shop={shop} onShopSaved={setShop} />
+          <SettingsView session={session} shop={shop} onShopSaved={setShop} onExitDemo={demoActions?.exit} />
         )}
       </main>
 
-      {tab !== 'settings' && orders !== null && (
-        <button className="fab" onClick={() => setForm({})}>
-          {t('newOrder')}
-        </button>
-      )}
-
-      <nav className="tabbar">
-        {['today', 'orders', 'settings'].map((name) => (
-          <button key={name} className={tab === name ? 'on' : ''} onClick={() => setTab(name)}>
-            {t('tab' + name[0].toUpperCase() + name.slice(1))}
+      <nav className="bottombar">
+        <div className="bottombar-inner">
+          {navButton('today', TodayIcon)}
+          {navButton('orders', OrdersIcon)}
+          <button className="nav-new" onClick={() => setForm({})} disabled={orders === null}>
+            {t('tabNew')}
           </button>
-        ))}
+          {navButton('settings', SettingsIcon)}
+        </div>
       </nav>
+
+      {sheetOrder && <OrderActionsSheet order={sheetOrder} ctx={ctx} onClose={() => setSheetId(null)} />}
 
       {form && (
         <OrderForm
@@ -283,7 +314,7 @@ function Main({ session, demoActions }) {
       )}
 
       {toast && (
-        <div className="toast" role="status">
+        <div className={'toast' + (form ? ' over-sheet' : '')} role="status">
           <span>{toast.text}</span>
           {toast.undo && <button onClick={toast.undo}>{t('undo')}</button>}
         </div>

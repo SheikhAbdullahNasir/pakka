@@ -1,5 +1,12 @@
 # COD Confirmer: Current State (audit, 2026-10-29; updated 2026-10-29 after the fixes round)
 
+**Phase 2 UI redesign (2026-10-30).** The whole interface was redone to match `PROJECT_SPEC.md`
+sections 3 and 4: "warm local" colours (cream, deep green, mustard), Plus Jakarta Sans, light mode
+only, new app shell, new order card with a "···" bottom sheet, redesigned Today / Orders / order form
+/ welcome / Settings / setup-error screens, and friendly translated error messages. The data layer
+(`lib/data.js`, `lib/supabase.js`, `supabase/schema.sql`) was not changed. Section 10 lists what was
+tested.
+
 **Fixes round (2026-10-29).** Six changes were made after the audit: amount parsing, real
 results for CSV "mark as Shipped", save-before-WhatsApp, Refused orders can't be deleted, explicit
 demo mode (with sample orders and a production config-error screen), and `<html lang>` following
@@ -25,7 +32,7 @@ Legend: ✅ works (by code reading + successful build) · 🟡 partly works · �
 | React / React DOM | 19.3.1 | `^19.3.1` |
 | @supabase/supabase-js | 2.118.0 | `^2.118.0` |
 | Language | Plain JavaScript (no TypeScript) | |
-| Styling | One hand-written CSS file, `app/globals.css` (252 lines), no CSS framework | |
+| Styling | One hand-written CSS file, `app/globals.css` (~365 lines); every colour is a CSS variable on `:root`. Font: Plus Jakarta Sans via `next/font/google` (downloaded at build time, served from the site), no CSS framework | |
 | Tests / linter | None | |
 
 The whole app is one client-side page (`'use client'`). There are no API routes and no server code
@@ -35,23 +42,25 @@ except the PWA icon generator. All database calls go straight from the browser t
 app/
   layout.js              <html lang="en"> (App.js changes it to match the language), page title, theme colour
   page.js                renders <App />
-  globals.css            all styles (light + dark mode)
+  globals.css            all styles and colour variables (light mode only; dark mode is a later phase)
   manifest.js            PWA manifest ("Add to Home screen")
   icon.svg               favicon
   pwa-icon/[size]/route.js  generates 192/512 PNG icons at build time
 components/
   App.js                 login check, demo on/off, config-error screen, data loading, tabs, toast/undo, CSV export
   Login.js               email one-time code login + "Try demo" button
-  LangToggle.js          English / Urdu switch
+  LangToggle.js          "EN | Urdu" language chip
+  Icons.js               bottom bar icons
   OrderForm.js           add / edit order sheet
-  OrderCard.js           one order + status buttons
+  OrderCard.js           one order + main action button, and the "···" bottom sheet
   TodayView.js           daily view
   OrdersView.js          all orders, search, status filter
   SettingsView.js        shop name, message language, sign out
 lib/
   data.js                all reads/writes (Supabase, or localStorage in demo mode) + demo sample orders
   supabase.js            creates the Supabase client from env vars; `configMissing` flag
-  phone.js               phone normalising/formatting
+  phone.js               phone normalising/formatting (also formats as you type)
+  format.js              Title Case for names/cities, amount commas while typing
   messages.js            WhatsApp message text + wa.me links
   csv.js                 courier CSV builder + download
   i18n.js                English + Roman Urdu dictionary
@@ -71,7 +80,7 @@ README.md                beginner setup guide
 |---|---|---|---|
 | 1 | Add an order in under 20 seconds: name, WhatsApp number, city, items, amount (Rs) | ✅ | `components/OrderForm.js`. Phone field first; returning customers get name/city/address auto-filled; city suggestions list. The "under 20 seconds" goal itself is **unverified** (not timed). Also has an optional Address field. Amount accepts digits and commas, and decimals are rounded to whole rupees (`2,500.50` → 2501); anything else (`2.5k`, `Rs 2500`) shows "Enter the amount in rupees using numbers only, like 2500 or 2,500" (both languages). |
 | 2 | "Send confirmation" opens WhatsApp via wa.me with a Roman Urdu message | ✅ | `lib/messages.js`. Text matches the requested template, plus a city/address line and optional shop name. Available on the form ("Save & send on WhatsApp") and on every Waiting order card. English version also exists (chosen in Settings). "Save & send" now saves first: an empty window is opened during the tap (so phones don't block it), then sent to WhatsApp only after the save succeeds, or closed if the save fails. If the browser blocks even the empty window, WhatsApp opens in the same tab after saving. Tested in the browser with `window.open` stubbed; **not** tested on a real phone browser. |
-| 3 | Statuses Waiting, Confirmed, Cancelled, Shipped, Delivered, Refused, one tap each | ✅ | Next-step buttons on the card; "More ▾" shows all six as chips. 5-second Undo toast after each change. |
+| 3 | Statuses Waiting, Confirmed, Cancelled, Shipped, Delivered, Refused, one tap each | ✅ | One main action per card (Send confirmation / Mark confirmed + Remind / Mark shipped / Mark delivered + Mark refused); the "···" button opens a bottom sheet with all six statuses, Open chat in WhatsApp, Edit, Delete. 5-second Undo toast after each change. |
 | 4 | Red warning on a new order if that number refused before, with count | ✅ | Shown in the form as soon as the number is valid, and on every order card. Counts come from the `customer_refusals` view. Counts are per seller only (by design, because of RLS). |
 | 5 | Daily view: confirmed orders ready to ship, waiting orders with "Remind" | ✅ / 🟡 | `components/TodayView.js` also shows a "Shipped" section. 🟡 It is not filtered by date: it shows **all** orders currently in those statuses, not only today's. Whether that matches the intent is a judgement call. |
 | 6 | Export confirmed list as CSV for the courier | 🟡 | `lib/csv.js`. Works and offers to mark them Shipped afterwards; the toast now reports the real result ("8 orders marked Shipped", or "8 marked Shipped, 2 failed…"). Columns are generic (Order ID, Customer Name, Phone, City, Address, Items, COD Amount, Order Date); not matched to any specific courier's bulk-upload template (TCS, Leopards, PostEx, etc.). Upload acceptance by any courier is **unverified**. |
@@ -81,7 +90,7 @@ README.md                beginner setup guide
 | Rule | Status | Notes |
 |---|---|---|
 | Roman Urdu / English toggle | 🟡 | Covers nearly all UI text; gaps listed in section 6. |
-| Big buttons | ✅ | Buttons 50px+ tall, inputs 52px, text 17–18px (`app/globals.css`). |
+| Big buttons | ✅ | Every button and input is at least 48px tall (main buttons and inputs 52px); body text 16px, meta text 14px. Checked in the browser at 360px and 412px. |
 | Works on a cheap Android phone | 🟡 | Light bundle, no heavy libraries, PWA manifest present. No service worker, so nothing works offline. Not tested on a real low-end device (**unverified**). |
 | Login with email so data survives a lost phone | ✅ (code) | Email one-time code via Supabase. Working end to end is **unverified** (no Supabase project is connected on this machine; see section 8). |
 | Never message a customer automatically | ✅ | The app only builds wa.me links; the seller presses send in WhatsApp. |
@@ -189,29 +198,32 @@ Whether RLS is **actually on** in a live project: **unverified** (depends on sch
   this browser's localStorage (`cod-confirmer-demo` for data, `cod-confirmer-demo-on` = `'1'` while
   demo is on, so it survives a reload). On first entry it seeds 11 sample orders in all six statuses
   (Pakistani names, cities, items); Kamran Shah (0321-1234567, Multan) has 2 refused orders and a new
-  Waiting one, so the red warning shows. While in demo, a banner says data stays on this device
-  only, with **Reset demo** (asks first, then restores the sample orders) and **Exit demo** (back
-  to login; demo data is kept for next time). Settings hides "Signed in as / Sign out" in demo.
+  Waiting one, so the red warning shows. While in demo, a thin "Demo mode" strip sits under the
+  screen title, with **Reset** (asks first, then restores the sample orders) and **Exit** (back
+  to the welcome screen; demo data is kept for next time). The welcome screen says demo data stays
+  on this phone. Settings shows **Exit demo** instead of "Signed in as / Sign out" in demo.
 - **Missing env vars:**
   - Production build (`next build` / Vercel): a "Setup is not finished" screen naming the two env
     vars. No login, no demo, even if a demo flag is left in the browser.
-  - Development (`npm run dev`): the login screen shows "Supabase is not connected on this
-    computer…" instead of the email form, and only **Try demo** works.
+  - Development (`npm run dev`): the welcome screen hides **Log in with email** and shows only
+    **Try the demo** (no error box).
 
 ---
 
 ## 6. Roman Urdu / English toggle coverage
 
-The toggle (`components/LangToggle.js`) is on the top bar, the login screen and Settings. Choice is
+The language chip (`components/LangToggle.js`) is on the top bar, the welcome screen and Settings. Choice is
 saved in localStorage (`cod-confirmer-lang`). All labels go through `t()` in `lib/i18n.js`, and the
 `ur` dictionary has an entry for every `en` key, so almost the whole UI switches.
 
 Not covered / always English:
-- **Error messages from Supabase** (login errors, the load-error banner, and the text in brackets
-  after "Could not save…") are shown raw, in English.
-- Toggle button labels "English" / "Urdu" and the message-language buttons "Roman Urdu" / "English"
-  (arguably intentional).
-- App name "COD Confirmer", the `aria-label="Language"`, the amount placeholder "2500", "Rs".
+- Supabase error messages are no longer shown. Login errors become "Too many tries…", "That code is
+  wrong or has expired…" or "Something went wrong…"; load and save errors use fixed friendly text.
+  All of these are translated. The raw error goes to the browser console only.
+- Language chip labels "EN" / "Urdu" and the message-language buttons "Roman Urdu" / "English"
+  (intentional).
+- City quick-pick chips (Karachi, Lahore, …) are city names, the same in both languages.
+- App name "COD Confirmer", the `aria-label="Language"`, the amount placeholder "2,500", "Rs", the "CC" monogram.
 - `<html lang>` now follows the toggle (`en` / `ur`), set from `App.js`. The server-rendered HTML
   still starts as `lang="en"` until the page loads.
 - The app always starts in English for a split second before the saved language loads
@@ -250,9 +262,9 @@ No `TODO` or `FIXME` comments exist in the code.
 
 | Value | Where |
 |---|---|
-| Common cities list (16 Pakistani cities) | `components/OrderForm.js` |
+| Common cities list (16 Pakistani cities; the first 7 are quick-pick chips) | `components/OrderForm.js` |
 | Message templates (Roman Urdu and English) | `lib/messages.js` |
-| Theme colour `#0b7a4b`, background `#f3f5f4` | `app/layout.js`, `app/manifest.js`, `app/pwa-icon/[size]/route.js`, `globals.css` |
+| Colours: all as variables in `app/globals.css` (table in `PROJECT_SPEC.md` 3.1/3.2). Browser bar / PWA background `#F6EFE3`, icon `#1F4D3A` with cream "CC" | `app/layout.js`, `app/manifest.js`, `app/icon.svg`, `app/pwa-icon/[size]/route.js` |
 | Load limit 1000 orders; page size 50 | `lib/data.js`, `components/OrdersView.js` |
 | Undo/toast 5 s; 400 ms delay before "mark shipped?" | `components/App.js` |
 | Settings preview sample (Ayesha, 2 lawn suits, Rs 4500, Lahore) | `components/SettingsView.js`, `lib/i18n.js` |
@@ -327,3 +339,30 @@ Browser: the Claude desktop app's built-in browser, phone-size viewport (375×81
 Not tested: real Supabase login and saves, the save-failure path of Save & send (demo saves can't
 fail), WhatsApp actually opening on a real Android/iPhone browser, and the Urdu config-error text
 on screen (the text exists in `lib/i18n.js`).
+
+---
+
+## 10. Phase 2 UI redesign: what was tested (2026-10-30)
+
+Browser: the Claude desktop app's built-in browser at 360×780 and 412×860, in English and Roman Urdu.
+Demo mode on the dev server (no Supabase), plus two production builds: one with placeholder Supabase
+values (to see the email login and its error) and one with none (setup-error screen).
+
+| Check | Result |
+|---|---|
+| No horizontal overflow, no clipped button text, no tap target under 48px: Today, Orders, Settings, "···" sheet, order form, welcome (both widths, both languages) | ✅ (checked with a script on every screen) |
+| Urdu Shipped card: "Deliver mark karein" + "Refuse mark karein" are too wide for one row at 360px, so they stack, with "···" on its own row | ✅ (found and fixed during testing) |
+| Today: sections in order Waiting / Ready to ship / Shipped, counts in headings, Export CSV in the Ready header, last card clears the bottom bar | ✅ |
+| "···" sheet: six status chips with the current one marked ✓; choosing one closes the sheet and shows the 5-second Undo toast; Undo works | ✅ |
+| Orders: filter chips (selected chip scrolls into view); search by last 4 digits (`4567`), by "0321-123", by items ("earbuds"), by name | ✅ |
+| New order: number auto-formats to 0321-1234567; refusal warning + "Returning customer · 3 orders before" + name/city/address auto-filled; city chip highlighted and scrolled into view; amount shows "Rs 25,000"; Save only saved it | ✅ |
+| Empty form: all five field errors shown | ✅ |
+| Edit order: single "Save changes" button | ✅ |
+| Welcome with Supabase configured: "Log in with email" reveals the email field in place; a failed request shows "Something went wrong. Check your internet and try again." | ✅ (placeholder Supabase address, so the request fails on purpose) |
+| Production build with no env vars: setup-error screen in the welcome style, English and Urdu | ✅ |
+| WCAG AA contrast for every colour pairing used (lowest 5.02:1) | ✅ `--text-secondary` darkened from `#6E6355` to `#665B4E` (was 4.45:1 on `--chip`) |
+| `npm run build` | ✅ |
+
+Not tested: a real phone, real Supabase login (the code step and the "code is wrong" message), the
+save-failure message in the order form (demo saves can't fail), Save and send opening WhatsApp
+(logic unchanged since the fixes round), and screen readers.

@@ -1,58 +1,60 @@
 'use client';
-// The daily screen: what to ship, who still has to reply, and what came back.
+// The daily screen: who still has to reply, what to ship, and what came back.
+// Shows every order that needs action, not only orders created today.
 import { useLang } from '@/lib/i18n';
 import OrderCard from './OrderCard';
 
 const oldestFirst = (a, b) => a.created_at.localeCompare(b.created_at);
 
-export default function TodayView({ orders, ctx, onExport }) {
+export default function TodayView({ orders, ctx, onExport, onNew }) {
   const { t } = useLang();
-  const confirmed = orders.filter((o) => o.status === 'confirmed').sort(oldestFirst);
   const waiting = orders.filter((o) => o.status === 'waiting').sort(oldestFirst);
+  const confirmed = orders.filter((o) => o.status === 'confirmed').sort(oldestFirst);
   const shipped = orders.filter((o) => o.status === 'shipped').sort(oldestFirst);
 
-  if (!orders.length) return <p className="empty">{t('emptyApp')}</p>;
+  if (!waiting.length && !confirmed.length && !shipped.length) {
+    return (
+      <div className="empty-state">
+        <p>{orders.length ? t('allClear') : t('emptyApp')}</p>
+        <button className="btn primary lg" onClick={onNew}>
+          {t('newOrderTitle')}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <>
-      <div className="summary">
-        <div className="stat s-confirmed">
-          <b>{confirmed.length}</b>
-          <span>{t('readyToShip')}</span>
-        </div>
-        <div className="stat s-waiting">
-          <b>{waiting.length}</b>
-          <span>{t('waitingReply')}</span>
-        </div>
-        <div className="stat s-shipped">
-          <b>{shipped.length}</b>
-          <span>{t('status_shipped')}</span>
-        </div>
-      </div>
-
-      <Section title={t('readyToShip')} list={confirmed} ctx={ctx}>
-        {confirmed.length > 0 && (
-          <button className="btn primary block" onClick={() => onExport(confirmed)}>
-            ⬇ {t('exportCsv')} ({confirmed.length})
-          </button>
-        )}
-      </Section>
-      <Section title={t('waitingReply')} list={waiting} ctx={ctx} />
-      <Section title={t('outForDelivery')} list={shipped} ctx={ctx} />
+      <Section title={t('waitingReply')} empty={t('emptyWaiting')} list={waiting} ctx={ctx} />
+      <Section
+        title={t('readyToShip')}
+        empty={t('emptyReady')}
+        list={confirmed}
+        ctx={ctx}
+        action={
+          confirmed.length > 0 && (
+            <button className="btn accent sm" onClick={() => onExport(confirmed)}>
+              {t('exportCsv')}
+            </button>
+          )
+        }
+      />
+      <Section title={t('outForDelivery')} empty={t('emptyShipped')} list={shipped} ctx={ctx} />
     </>
   );
 }
 
-function Section({ title, list, ctx, children }) {
-  const { t } = useLang();
+function Section({ title, empty, list, ctx, action }) {
   return (
     <section className="section">
-      <h2>
-        {title} <span className="count">{list.length}</span>
-      </h2>
-      {children}
+      <div className="section-head">
+        <h2>
+          {title} <span className="num">· {list.length}</span>
+        </h2>
+        {action}
+      </div>
       {list.length === 0 ? (
-        <p className="muted">{t('nothingHere')}</p>
+        <p className="section-empty">{empty}</p>
       ) : (
         list.map((o) => <OrderCard key={o.id} order={o} ctx={ctx} />)
       )}

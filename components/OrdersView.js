@@ -12,12 +12,16 @@ export default function OrdersView({ orders, ctx }) {
   const [status, setStatus] = useState('all');
   const [shown, setShown] = useState(PAGE);
 
+  // Text matches name or items; 3+ digits match anywhere in the number (so the last 4 digits work).
   const q = query.trim().toLowerCase();
   const digits = q.replace(/\D/g, '').replace(/^0/, '');
   const list = orders.filter(
     (o) =>
       (status === 'all' || o.status === status) &&
-      (!q || o.customer_name.toLowerCase().includes(q) || (digits.length >= 3 && o.phone.includes(digits)))
+      (!q ||
+        o.customer_name.toLowerCase().includes(q) ||
+        o.items.toLowerCase().includes(q) ||
+        (digits.length >= 3 && o.phone.includes(digits)))
   );
 
   return (
@@ -25,15 +29,24 @@ export default function OrdersView({ orders, ctx }) {
       <input
         className="search"
         type="search"
+        aria-label={t('search')}
         placeholder={t('search')}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      <div className="filters">
+      <div className="scroll-row filters">
         {['all', ...STATUSES].map((s) => (
-          <button key={s} className={`chip s-${s}` + (status === s ? ' on' : '')} onClick={() => setStatus(s)}>
-            {s === 'all' ? t('all') : t('status_' + s)}{' '}
-            <small>{s === 'all' ? orders.length : orders.filter((o) => o.status === s).length}</small>
+          <button
+            key={s}
+            className={'pill' + (status === s ? ' on' : '')}
+            aria-pressed={status === s}
+            onClick={(e) => {
+              setStatus(s);
+              e.currentTarget.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+            }}
+          >
+            {s === 'all' ? t('all') : t('status_' + s)}
+            <small className="num">{s === 'all' ? orders.length : orders.filter((o) => o.status === s).length}</small>
           </button>
         ))}
       </div>
@@ -43,7 +56,7 @@ export default function OrdersView({ orders, ctx }) {
         <OrderCard key={o.id} order={o} ctx={ctx} />
       ))}
       {list.length > shown && (
-        <button className="btn ghost block" onClick={() => setShown(shown + PAGE)}>
+        <button className="btn secondary block" onClick={() => setShown(shown + PAGE)}>
           {t('showMore')}
         </button>
       )}
