@@ -7,10 +7,13 @@ and icons changed; features, layout and colours did not. The localStorage keys k
 `cod-confirmer-*` names on purpose, so existing demo data and language choice survive. Section 14 lists
 what was tested.
 
+**Phase 3 part 2 (2026-10-30).** The app is live at https://pakkapk.vercel.app and connected to Supabase.
+Abdullah checked it on a real Android phone. Section 15 lists the facts and what is still unverified.
+
 **Phase 3 part 1 (2026-10-30).** Login is now magic link only, and the app was tested for the first time
 against a real Supabase project (login, saving, refusal warnings, settings, RLS with two accounts).
-Section 13 lists what was tested. Items marked **verified** below were checked in that test. Vercel is
-still not set up.
+Section 13 lists what was tested. Items marked **verified** below were checked in that test, unless they
+name section 15.
 
 **Action row rule and toast (2026-10-30).** "···" now always shares the last row of action buttons, and
 the status-change toast has new wording in both languages. Section 12 lists what was tested.
@@ -103,16 +106,16 @@ README.md                beginner setup guide
 | 3 | Statuses Waiting, Confirmed, Cancelled, Shipped, Delivered, Refused, one tap each | ✅ **verified** | One main action per card (Send confirmation / Mark confirmed + Remind / Mark shipped / Mark delivered + Mark refused); the "···" button opens a bottom sheet with all six statuses, Open chat in WhatsApp, Edit, Delete. 5-second Undo toast after each change. Status changes, Undo, edit and delete were confirmed in the real database. |
 | 4 | Red warning on a new order if that number refused before, with count | ✅ **verified** | Shown in the form as soon as the number is valid, and on every order card. Counts come from the `customer_refusals` view. Counts are per seller only (by design, because of RLS; a second account saw no warning for the same number). |
 | 5 | Daily view: confirmed orders ready to ship, waiting orders with "Remind" | ✅ / 🟡 | `components/TodayView.js` also shows a "Shipped" section. 🟡 It is not filtered by date: it shows **all** orders currently in those statuses, not only today's. Whether that matches the intent is a judgement call. |
-| 6 | Export confirmed list as CSV for the courier | 🟡 | `lib/csv.js`. Works and offers to mark them Shipped afterwards (**verified** against the real database, with the file captured in the page rather than downloaded); the toast now reports the real result ("8 orders marked Shipped", or "8 marked Shipped, 2 failed…"). Columns are generic (Order ID, Customer Name, Phone, City, Address, Items, COD Amount, Order Date); not matched to any specific courier's bulk-upload template (TCS, Leopards, PostEx, etc.). Upload acceptance by any courier is **unverified**. |
+| 6 | Export confirmed list as CSV for the courier | 🟡 | `lib/csv.js`. Works and offers to mark them Shipped afterwards (**verified** against the real database, with the file captured in the page rather than downloaded); the toast now reports the real result ("8 orders marked Shipped", or "8 marked Shipped, 2 failed…"). Columns are generic (Order ID, Customer Name, Phone, City, Address, Items, COD Amount, Order Date); not matched to any specific courier's bulk-upload template (TCS, Leopards, PostEx, etc.). Upload acceptance by any courier is **unverified**. A real file download, on a phone or a computer, is also **unverified**. |
 
 ### Rules
 
 | Rule | Status | Notes |
 |---|---|---|
-| Roman Urdu / English toggle | 🟡 | Covers nearly all UI text; gaps listed in section 6. |
+| Roman Urdu / English toggle | 🟡 | Covers nearly all UI text; gaps listed in section 6. Urdu **verified** on a real Android phone (section 15). |
 | Big buttons | ✅ | Every button and input is at least 48px tall (main buttons and inputs 52px); body text 16px, meta text 14px. Checked in the browser at 360px and 412px. |
-| Works on a cheap Android phone | 🟡 | Light bundle, no heavy libraries, PWA manifest present. No service worker, so nothing works offline. Not tested on a real low-end device (**unverified**). |
-| Login with email so data survives a lost phone | ✅ **verified** | Email sign-in link via Supabase. Two accounts logged in end to end on `localhost`. Signing in again on the same account was skipped to save emails (persistence was checked by reloading and reading the database). Not tested on a real phone or a live site. |
+| Works on a cheap Android phone | 🟡 | Light bundle, no heavy libraries, PWA manifest present. No service worker, so nothing works offline. The live site works on Abdullah's Android phone (section 15), but that was not a low-end device test (**unverified**). |
+| Login with email so data survives a lost phone | ✅ **verified** | Email sign-in link via Supabase. Two accounts logged in end to end on `localhost`. Signing in again on the same account was skipped to save emails (persistence was checked by reloading and reading the database). Magic link login also **verified** on the live site, on a real Android phone in Chrome (section 15). |
 | Never message a customer automatically | ✅ | The app only builds wa.me links; the seller presses send in WhatsApp. |
 
 ### Version two (requested for later)
@@ -128,7 +131,7 @@ README.md                beginner setup guide
 |---|---|
 | Next.js | ✅ |
 | Supabase database | ✅ **verified**: `schema.sql` was run in a real Supabase project by Abdullah, and the app reads and writes it |
-| Deployed free on Vercel | ❌ No evidence of a deployment (see section 8) |
+| Deployed free on Vercel | ✅ https://pakkapk.vercel.app (see section 8) |
 | Beginner explanations | ✅ `README.md` is a step-by-step beginner guide |
 
 ---
@@ -222,8 +225,9 @@ was refused (401).
   `errLinkExpired`.
 - Tapping a link turns demo mode off, so a seller who tried the demo while waiting for the email lands
   in their real account. (Tested with a failed link only. It was not tested with a successful link.)
-- Supabase **URL Configuration** has Site URL and Redirect URLs set to `http://localhost:3000`
-  (set by Abdullah). The dev server must run on port 3000 for links to return to it.
+- Supabase **URL Configuration** (set by Abdullah): Site URL is `https://pakkapk.vercel.app`; Redirect
+  URLs are `https://pakkapk.vercel.app` and `http://localhost:3000`. The dev server must run on port 3000
+  for links to return to it.
 - Sign-ups are open: anyone with the URL can create an account (Supabase default). Each account
   only sees its own data because of RLS.
 - **Demo mode is explicit.** The login screen has a **Try demo** button. Demo stores everything in
@@ -326,8 +330,9 @@ git-ignored (`.gitignore` line 6), and has never been committed (**verified**).
    but stays out of scope for now.
 3. **Supabase free projects pause after ~1 week of no use.** The app would show load errors until
    someone restores it.
-4. **Supabase Site URL / Redirect URLs** must be changed to the Vercel address (keep
-   `http://localhost:3000` in Redirect URLs), or email links go back to `localhost:3000`. Not tested yet.
+4. **Supabase Site URL / Redirect URLs** must stay on the Vercel address (keep
+   `http://localhost:3000` in Redirect URLs), or email links go back to `localhost:3000`. Set by Abdullah,
+   and a magic link worked on the live site (section 15). If the domain ever changes, these must change too.
    Magic link makes this critical: there is no other way to log in.
 5. **No offline support.** On a weak connection, saves fail with "Could not save" (the screen rolls
    back the change).
@@ -339,8 +344,10 @@ git-ignored (`.gitignore` line 6), and has never been committed (**verified**).
    up a link this way during testing (section 13). Not seen from a real scanner yet.
 9. **Link opening in the wrong browser.** If Gmail or another app opens the link in its own built-in
    browser, the seller is logged in there, not in Chrome or the home-screen app. The on-screen text asks
-   them to open it on this phone, but it can't control which browser opens. Not tested on a real phone.
+   them to open it on this phone, but it can't control which browser opens. Login worked on Abdullah's
+   phone in Chrome (section 15); other email apps and browsers were not tested.
 10. **Rejected email addresses** show a misleading "check your internet" message (section 7, bug 9).
+11. **The Vercel domain is `pakkapk.vercel.app`**, because the plain "pakka" name was not available.
 
 ---
 
@@ -350,13 +357,12 @@ git-ignored (`.gitignore` line 6), and has never been committed (**verified**).
 - **GitHub:** ✅ Remote `origin` = `https://github.com/SheikhAbdullahNasir/pakka.git` (renamed from `cod-confirmer` on 2026-10-30).
   The public GitHub API returned 404 for the repo at audit time, which means it is **private** (or not
   visible without login).
-- **Vercel / any deployment:** ❌ **No evidence of a deployment.** There is no `.vercel` folder, no
-  `vercel.json`, and earlier chat sessions only mention placeholder addresses
-  (`cod-confirmer-abc.vercel.app`). Whether a Vercel project was created through the website is
-  **unverified**.
-- **Supabase:** ✅ **Connected on this machine (verified).** Abdullah created a project, ran
-  `schema.sql` and put the two values in `.env.local`. It currently holds test data: account one has 6
-  test orders and a test shop name, account two is empty. Nothing connects it to a live site yet.
+- **Vercel:** ✅ **Deployed** at https://pakkapk.vercel.app (Vercel project `pakka`). It deploys
+  automatically on every push to `main`. `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  are set for Production and Preview.
+- **Supabase:** ✅ **Connected, on this machine and on the live site.** Region: Mumbai (`ap-south-1`).
+  Abdullah created a project, ran `schema.sql` and put the two values in `.env.local`. It holds test data
+  from Phase 3 part 1: account one has 6 test orders and a test shop name, account two is empty.
 - **Build:** ✅ `npm run build` succeeds (Next.js 16.4.3, Turbopack; re-checked in Phase 3 part 1). Routes: `/` (static),
   `/manifest.webmanifest`, `/icon.svg`, `/pwa-icon/192`, `/pwa-icon/512`, `/pwa-icon/maskable`.
 
@@ -576,3 +582,30 @@ still called `COD Confirmer`. The Supabase project keeps whatever name it was gi
 
 The PNG home-screen icons draw "P" in a regular-weight font, because the icon generator only has that font
 built in. The favicon and welcome tile are bold. This is left as is, because the tile is a placeholder.
+
+---
+
+## 15. Phase 3 part 2: deployment (2026-10-30)
+
+Docs only, no code changes. The facts below come from Abdullah; Claude did not test them.
+
+- Live at https://pakkapk.vercel.app (Vercel project `pakka`, deploys automatically on push to `main`).
+- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are set in Vercel for Production and
+  Preview. The anon key value is Supabase's publishable key.
+- Supabase project region: Mumbai (`ap-south-1`).
+- Supabase Site URL: `https://pakkapk.vercel.app`. Redirect URLs: `https://pakkapk.vercel.app` and
+  `http://localhost:3000`.
+- The domain is `pakkapk.vercel.app` because the plain "pakka" name was not available.
+
+Checked by Abdullah on a real Android phone in Chrome, on the live site:
+
+| Check | Result |
+|---|---|
+| Welcome screen | ✅ |
+| Try the demo | ✅ |
+| Email login via magic link | ✅ |
+| Urdu | ✅ |
+
+**Still unverified:** WhatsApp opening, CSV download, and a low-end device test.
+
+`npm run build` passes (run by Claude).

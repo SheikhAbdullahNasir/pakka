@@ -2,6 +2,8 @@
 
 **Confirmed orders. Fewer refusals.**
 
+**Live demo: [pakkapk.vercel.app](https://pakkapk.vercel.app)**
+
 A phone-first web app for small Pakistani sellers who take orders on Instagram and WhatsApp.
 Confirm every cash-on-delivery order on WhatsApp **before** it ships, and remember who refused before.
 
@@ -139,7 +141,7 @@ Supabase gives you a database and email login for free.
 
 ---
 
-## Part 4: Put it on the internet for free (GitHub + Vercel, 15 minutes)
+## Part 4: Deploy it for free (GitHub + Vercel, 15 minutes)
 
 Vercel hosts the app for free. It takes the code from GitHub, so we put it there first.
 
@@ -171,10 +173,14 @@ Vercel hosts the app for free. It takes the code from GitHub, so we put it there
 ### 4b. Deploy on Vercel
 1. Go to **https://vercel.com**, click **Sign up**, and choose **Continue with GitHub**.
 2. Click **Add New… → Project**, find `pakka`, click **Import**.
-3. Open **Environment Variables** and add the same two lines from your `.env.local`:
+3. Open **Environment Variables** and add the same two lines from your `.env.local`, **before the first deploy**:
    - `NEXT_PUBLIC_SUPABASE_URL` = your project URL
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = your anon / publishable key
-4. Click **Deploy**. After a minute you get an address like `https://pakka-abc.vercel.app`.
+
+   These are built into the app when it deploys. If you add them later, redeploy after adding them:
+   **Deployments → ⋮ → Redeploy**.
+4. Don't add Vercel's Supabase integration. The two variables above are all the app needs.
+5. Click **Deploy**. After a minute you get an address like `https://pakka-abc.vercel.app`.
 
 ### 4c. Tell Supabase your new address
 Back in Supabase: **Authentication → URL Configuration**.
@@ -184,6 +190,11 @@ Back in Supabase: **Authentication → URL Configuration**.
 Click **Save**. Without this, the link inside the login email would send people to the wrong place.
 
 **From now on, every time you `git push`, Vercel updates the live app by itself.**
+
+### Limits
+- **Sign-in emails:** free Supabase email allows only a few sign-in emails per hour.
+- **Pausing:** free projects pause after about a week of no use. The demo still works while paused.
+- **Link scanners:** email link scanners can use up a magic link, because each link works only once.
 
 ---
 

@@ -32,6 +32,7 @@ A mobile-first web app for small Pakistani sellers who take cash-on-delivery ord
 | Courier CSV | Generic columns, no courier-specific formats |
 | Login | Magic link only. Free plan locks email templates; custom SMTP stays out of scope. |
 | Brand | Name: Pakka. Slogan: 'Confirmed orders. Fewer refusals.' (Urdu: 'Pakke orders. Kam refusals.'). Logo: placeholder 'P' tile until a logo is designed. |
+| Deployment | Hosting: Vercel, pakkapk.vercel.app. Database: Supabase, Mumbai region. |
 
 ---
 
@@ -236,7 +237,7 @@ Same look as the welcome screen, with a clear message that the app is not config
 |---|---|
 | 1. Bug fixes + explicit demo mode | Done (commit `763ee31`) |
 | 2. UI and UX redesign per this spec | Done (2026-10-30) |
-| 3. Supabase setup + Vercel deploy | Next (remember: redeploy after adding env vars) |
+| 3. Supabase setup + Vercel deploy | Done (2026-10-30) |
 | 4. Real phone testing, README polish, portfolio write-up | After phase 3 |
 | 5. Dark mode | Optional, later |
 
