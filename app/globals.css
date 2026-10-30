@@ -232,13 +232,14 @@ input:focus, textarea:focus { outline: none; border: 2px solid var(--primary); p
 .card-address { margin-top: 4px; font-size: 14px; color: var(--text-secondary); overflow-wrap: anywhere; }
 .card-state { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin-top: 10px; font-size: 14px; color: var(--text-secondary); }
 
-/* Main buttons and "···" share a row; if they don't fit, "···" drops to the right of a second row. */
+/* Everything shares one row if it fits. If not, the first button takes row one,
+   and .actions-last (the last button plus "···", which never split) takes row two. */
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.actions .main { flex: 1 1 auto; display: flex; flex-wrap: wrap; gap: 8px; }
-.actions .main .btn { flex: 1 1 auto; }
+.actions .btn { flex: 1 1 auto; }
+.actions-last { flex: 1 1 auto; display: flex; gap: 8px; }
 /* Narrow "Remind", so "Mark confirmed", "Remind" and "···" can share one row at 360px. */
-.actions .main .btn.narrow { padding: 0 8px; }
-.more-btn {
+.actions .btn.narrow { padding: 0 8px; }
+.actions .more-btn {
   flex: none; margin-left: auto; width: 52px; min-height: 48px; padding: 0;
   font-size: 20px; font-weight: 700; letter-spacing: 1px; color: var(--text);
 }

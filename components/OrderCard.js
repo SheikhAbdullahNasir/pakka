@@ -42,25 +42,21 @@ export default function OrderCard({ order, ctx }) {
     </button>
   );
 
-  let main = null;
+  // At most two main buttons. The last one always stays in the same row as "···".
+  let first = null;
+  let last = null;
   if (order.status === 'waiting') {
-    main = sent ? (
-      <>
-        {statusButton('confirmed', t('markConfirmed'), 'primary')}
-        {waButton(t('remind'), 'secondary narrow')}
-      </>
-    ) : (
-      waButton(t('sendConfirm'), 'primary')
-    );
+    if (sent) {
+      first = statusButton('confirmed', t('markConfirmed'), 'primary');
+      last = waButton(t('remind'), 'secondary narrow');
+    } else {
+      last = waButton(t('sendConfirm'), 'primary');
+    }
   } else if (order.status === 'confirmed') {
-    main = statusButton('shipped', t('markShipped'), 'accent');
+    last = statusButton('shipped', t('markShipped'), 'accent');
   } else if (order.status === 'shipped') {
-    main = (
-      <>
-        {statusButton('delivered', t('markDelivered'), 'primary')}
-        {statusButton('refused', t('markRefused'), 'danger-outline')}
-      </>
-    );
+    first = statusButton('delivered', t('markDelivered'), 'primary');
+    last = statusButton('refused', t('markRefused'), 'danger-outline');
   }
 
   return (
@@ -87,10 +83,13 @@ export default function OrderCard({ order, ctx }) {
       </div>
 
       <div className="actions">
-        {main && <div className="main">{main}</div>}
-        <button className="btn more-btn" aria-label={t('moreActions')} onClick={() => ctx.openMore(order)}>
-          ···
-        </button>
+        {first}
+        <div className="actions-last">
+          {last}
+          <button className="btn more-btn" aria-label={t('moreActions')} onClick={() => ctx.openMore(order)}>
+            ···
+          </button>
+        </div>
       </div>
     </article>
   );

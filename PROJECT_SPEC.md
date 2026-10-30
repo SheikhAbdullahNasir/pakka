@@ -146,7 +146,13 @@ Main action by status:
 
 Buttons always use action words ("Mark confirmed"), never a bare status name, so they can't be confused with the status chip.
 
-When the main action(s) and "···" don't fit on one row at 360px (for example the Shipped card), the main buttons share the first row and "···" moves to the right end of a second row. **Remind** has narrower padding so the Waiting card fits on one row where the text allows (English at 360px does, Roman Urdu does not).
+The "···" button always shares the last row of action buttons and never sits alone on its own row. This applies at every width and in both languages:
+
+- When the main button(s) fit on one row with "···", keep one row.
+- When they don't fit, the first main button takes the full width of row one, and the second main button plus "···" share row two.
+- The only exception is a card with no main action (Delivered, Cancelled, Refused), where "···" is the only button.
+
+**Remind** has narrower padding so the Waiting card fits on one row where the text allows (English at 360px does, Roman Urdu does not).
 
 The "···" button opens a bottom sheet with: change status (all six as light chips, current one marked, see 3.2), Open chat in WhatsApp, Edit, Delete. Delete on a Refused order shows the existing "refusal history is kept" message.
 

@@ -1,5 +1,8 @@
 # COD Confirmer: Current State (audit, 2026-10-29; updated 2026-10-29 after the fixes round)
 
+**Action row rule and toast (2026-10-30).** "···" now always shares the last row of action buttons, and
+the status-change toast has new wording in both languages. Section 12 lists what was tested.
+
 **Phase 2 polish pass (2026-10-30).** Roman Urdu wording updated (Shipped is now "Ship ho gaya"
 everywhere), all six chips in the "···" sheet are light, "Remind" is narrower, and the welcome content
 is centered vertically. Section 11 lists what was tested.
@@ -355,7 +358,7 @@ values (to see the email login and its error) and one with none (setup-error scr
 | Check | Result |
 |---|---|
 | No horizontal overflow, no clipped button text, no tap target under 48px: Today, Orders, Settings, "···" sheet, order form, welcome (both widths, both languages) | ✅ (checked with a script on every screen) |
-| Urdu Shipped card: "Deliver mark karein" + "Refuse mark karein" are too wide for one row at 360px, so they stack, with "···" on its own row | ✅ (found and fixed during testing) |
+| Urdu Shipped card: "Deliver mark karein" + "Refuse mark karein" are too wide for one row at 360px, so they stack, with "···" on its own row | ✅ (found and fixed during testing; layout replaced later, see section 12) |
 | Today: sections in order Waiting / Ready to ship / Shipped, counts in headings, Export CSV in the Ready header, last card clears the bottom bar | ✅ |
 | "···" sheet: six status chips with the current one marked ✓; choosing one closes the sheet and shows the 5-second Undo toast; Undo works | ✅ |
 | Orders: filter chips (selected chip scrolls into view); search by last 4 digits (`4567`), by "0321-123", by items ("earbuds"), by name | ✅ |
@@ -383,7 +386,7 @@ address was used to show the email login, then removed.
 |---|---|
 | No horizontal overflow, no clipped button text, no tap target under 48px: welcome, Today, "···" sheet, Orders, Settings, order form (both widths, both languages) | ✅ |
 | Waiting card with message sent, English: "Mark confirmed", "Remind" and "···" on one row at 360px and 412px | ✅ |
-| Same card, Roman Urdu: does not fit on one row ("Confirm mark karein" + "Yaad dilaein" are too wide) | 🟡 Layout unchanged: **three rows at 360px** (the two buttons miss sharing a row by about 8px), two rows at 412px |
+| Same card, Roman Urdu: does not fit on one row ("Confirm mark karein" + "Yaad dilaein" are too wide) | 🟡 Layout unchanged at the time: three rows at 360px, two rows at 412px (now two rows at both, see section 12) |
 | "···" sheet: six light chips, Delivered no longer filled; only the current status has the dark border and ✓, checked with Waiting and with Delivered as the current status | ✅ |
 | Urdu Shipped label shows "Ship ho gaya" on the card chip, filter chip and sheet; no "Bhej diya" left for the Shipped status | ✅ |
 | Welcome: content centered, footer 24px from the bottom, no page scroll (with and without the email button) | ✅ |
@@ -397,3 +400,27 @@ or a CSV export run). The text was checked in `lib/i18n.js` only.
 
 Screenshots are in `screenshots/`, English plus `-ur` Urdu versions at 360px. The folder is git-ignored,
 so they stay on this computer and are not on GitHub.
+
+---
+
+## 12. Action row rule and toast: what was tested (2026-10-30)
+
+Browser: headless Edge (scripted checks and screenshots) at 360×780 and 412×860, in English and Roman
+Urdu, on the dev server in demo mode. Every order card type was checked, on Today and on Orders.
+
+| Card | 360px English | 360px Urdu | 412px English | 412px Urdu |
+|---|---|---|---|---|
+| Waiting, message sent | 1 row | 2 rows | 1 row | 2 rows |
+| Waiting, not sent | 1 row | 1 row | 1 row | 1 row |
+| Confirmed | 1 row | 1 row | 1 row | 1 row |
+| Shipped | 2 rows | 2 rows | 1 row | 2 rows |
+| Delivered, Cancelled, Refused | "···" only | "···" only | "···" only | "···" only |
+
+| Check | Result |
+|---|---|
+| On every 2-row card, the first button is full width, and the second button and "···" share row two, with "···" at the right edge | ✅ |
+| No horizontal overflow, no clipped button text, no tap target under 48px on any screen (both widths, both languages) | ✅ |
+| Toast for all five status changes, each one undone: "Status changed to Shipped" / "Status badal gaya: Ship ho gaya". No overflow; the Urdu text wraps to two lines at 360px next to the Undo button | ✅ |
+| `npm run build` | ✅ |
+
+Not tested: a real phone. Replaced screenshots: `2-today-ur.jpg`, `4-orders-filter.jpg`, `4-orders-filter-ur.jpg`.
