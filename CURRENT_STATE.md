@@ -2,6 +2,8 @@
 
 Confirmed orders. Fewer refusals.
 
+**Project brief (2026-11-02).** `docs/PROJECT_BRIEF.md` added, for pasting into AI chats; its links resolve, `npm run build` passes, and no app code changed.
+
 **Phase 4 step 5, part 2: case study (2026-11-01).** `docs/CASE_STUDY.md` added and linked from the README. Phase 4
 is done. No app code changed. Section 22 has the details.
 
