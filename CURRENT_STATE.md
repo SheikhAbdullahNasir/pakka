@@ -2,6 +2,10 @@
 
 Confirmed orders. Fewer refusals.
 
+**Phase 4 step 4: database rule for refused orders (2026-11-01).** `schema.sql` now refuses to delete a Refused
+order. SQL written, pending Abdullah running it on the live project. No app code changed. Section 20 lists what
+was tested and what wasn't.
+
 **CSV phone format and real-phone tests (2026-11-01).** The courier CSV now exports phones as `0300-1234567`.
 WhatsApp opening and CSV download were verified by Abdullah on a real phone. Section 19 has the details.
 
@@ -124,7 +128,7 @@ README.md                beginner setup guide
 | 3 | Statuses Waiting, Confirmed, Cancelled, Shipped, Delivered, Refused, one tap each | ✅ **verified** | One main action per card (Send confirmation / Mark confirmed + Remind / Mark shipped / Mark delivered + Mark refused); the "···" button opens a bottom sheet with all six statuses, Open chat in WhatsApp, Edit, Delete. 5-second Undo toast after each change. Status changes, Undo, edit and delete were confirmed in the real database. |
 | 4 | Red warning on a new order if that number refused before, with count | ✅ **verified** | Shown in the form as soon as the number is valid, and on every order card. Counts come from the `customer_refusals` view. Counts are per seller only (by design, because of RLS; a second account saw no warning for the same number). |
 | 5 | Daily view: confirmed orders ready to ship, waiting orders with "Remind" | ✅ / 🟡 | `components/TodayView.js` also shows a "Shipped" section. 🟡 It is not filtered by date: it shows **all** orders currently in those statuses, not only today's. Whether that matches the intent is a judgement call. |
-| 6 | Export confirmed list as CSV for the courier | 🟡 | `lib/csv.js`. Works and offers to mark them Shipped afterwards (**verified** against the real database, with the file captured in the page rather than downloaded); the toast now reports the real result ("8 orders marked Shipped", or "8 marked Shipped, 2 failed…"). Columns are generic (Order ID, Customer Name, Phone, City, Address, Items, COD Amount, Order Date); not matched to any specific courier's bulk-upload template (TCS, Leopards, PostEx, etc.). Phones are exported as `0300-1234567`, so spreadsheet apps keep the leading 0. Upload acceptance by any courier is **unverified**, including whether courier portals accept the dash. A real file download is **verified** on a real phone, in Chrome and in the home-screen app, and the file opened in Excel (section 19). The new phone format in Excel and Google Sheets is pending Abdullah's re-check. |
+| 6 | Export confirmed list as CSV for the courier | 🟡 | `lib/csv.js`. Works and offers to mark them Shipped afterwards (**verified** against the real database, with the file captured in the page rather than downloaded); the toast now reports the real result ("8 orders marked Shipped", or "8 marked Shipped, 2 failed…"). Columns are generic (Order ID, Customer Name, Phone, City, Address, Items, COD Amount, Order Date); not matched to any specific courier's bulk-upload template (TCS, Leopards, PostEx, etc.). Phones are exported as `0300-1234567`, so spreadsheet apps keep the leading 0. Upload acceptance by any courier is **unverified**, including whether courier portals accept the dash. A real file download is **verified** on a real phone, in Chrome and in the home-screen app, and the file opened in Excel (section 19). The new phone format is **verified** in WPS Office on a real Android phone; Google Sheets on the phone was not tested (section 19). |
 
 ### Rules
 
@@ -158,7 +162,8 @@ README.md                beginner setup guide
 
 Source: `supabase/schema.sql`. It has been run in a real Supabase project (**verified**: the app's
 inserts, updates, deletes, the view and the shop upsert all work against it). Schema unchanged in
-Phase 3 part 1.
+Phase 3 part 1. The one later change is the `orders` delete policy below: SQL written, pending Abdullah
+running it on the live project (section 20).
 
 ### Table `public.orders`
 
@@ -198,7 +203,7 @@ created `with (security_invoker = true)` so it obeys the `orders` RLS policies.
 
 | Object | RLS enabled in schema.sql? | Policies |
 |---|---|---|
-| `orders` | ✅ Yes | select / insert / update / delete, all `to authenticated`, all `user_id = auth.uid()` |
+| `orders` | ✅ Yes | select / insert / update, all `to authenticated`, all `user_id = auth.uid()`. Delete (`"orders: delete own"`), `to authenticated`: `user_id = auth.uid() and status <> 'refused'` (SQL written, pending Abdullah running it; until then the live project still has plain `user_id = auth.uid()`). |
 | `shops` | ✅ Yes | select / insert / update `to authenticated`, `user_id = auth.uid()`. No delete policy (so sellers cannot delete their shop row; probably fine). |
 | `customer_refusals` (view) | n/a (views have no RLS) | `security_invoker = true`, so it inherits `orders` RLS. Granted `select` to `authenticated`. |
 
@@ -308,9 +313,15 @@ No `TODO` or `FIXME` comments exist in the code.
    even if the seller backs out of WhatsApp.
 6. ~~Deleting a refused order erases that refusal from history.~~ **Fixed in the app:** tapping
    Delete on a Refused order shows "Refused orders cannot be deleted. They are kept so you are
-   warned if this number orders again." (both languages). Not enforced in the database: the
-   `orders` delete policy in `schema.sql` is unchanged, and a seller can still change the status
-   away from Refused and then delete.
+   warned if this number orders again." (both languages). **In the database: SQL written, pending
+   Abdullah running it.** The `orders` delete policy in `schema.sql` now also needs
+   `status <> 'refused'` (section 20).
+   - **Known gap, not fixed:** a seller can still change a Refused order to another status and then
+     delete it. Closing that would need a separate refusal history table, which is out of scope.
+   - **Blocked deletes look like successes to the app.** The database refuses by matching 0 rows, not
+     with an error. If an order was marked Refused on another device and this one still shows the old
+     status, Delete removes the card here, and it comes back on reload. Found by reading the code, not
+     reproduced. Left as is, because this step changes no app code.
 7. **No live sync between devices.** A second phone/computer sees changes only after reload.
 8. Two quick status taps on the same order can race: each update is sent independently, and the
    last response to arrive wins (**unverified** in practice).
@@ -382,8 +393,8 @@ git-ignored (`.gitignore` line 6), and has never been committed (**verified**).
   automatically on every push to `main`. `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
   are set for Production and Preview.
 - **Supabase:** ✅ **Connected, on this machine and on the live site.** Region: Mumbai (`ap-south-1`).
-  Abdullah created a project, ran `schema.sql` and put the two values in `.env.local`. It holds test data
-  from Phase 3 part 1: account one has 6 test orders and a test shop name, account two is empty.
+  Abdullah created a project, ran `schema.sql` and put the two values in `.env.local`. Abdullah deleted all
+  test orders and shops from the live project on 2026-11-01. Both test accounts still exist, with no data.
 - **Build:** ✅ `npm run build` succeeds (Next.js 16.4.3, Turbopack; re-checked in Phase 3 part 1). Routes: `/` (static),
   `/manifest.webmanifest`, `/icon.svg`, `/apple-icon`, `/opengraph-image`, `/pwa-icon/192`, `/pwa-icon/512`, `/pwa-icon/maskable`.
 
@@ -796,7 +807,67 @@ and a new line in names, cities, items and addresses, and text starting with `=`
 | Mark-as-shipped prompt still appears after the download (answered No in this test) | ✅ |
 | `npm run build` | ✅ |
 
-**Pending:** Abdullah's re-check of the new format in Excel and Google Sheets on his phone.
+Re-checked by Abdullah on his Android phone, after `fac1340` deployed (2026-11-01):
+
+| Check | Result |
+|---|---|
+| The CSV opened in WPS Office, and phones showed as `0300-1234567` | ✅ |
+| Excel re-check | Replaced by the WPS check |
+| Google Sheets on the phone | Not tested: it only opens in the browser there |
 
 **Not tested:** whether any courier portal accepts the dash. The comment on `localPhone` says `03001234567` is
 what most courier portals expect, so a portal could reject `0300-1234567`. No portal has been tried in either format.
+
+---
+
+## 20. Phase 4 step 4: database rule for refused orders (2026-11-01)
+
+`schema.sql` only: the `"orders: delete own"` policy gained `and status <> 'refused'`. Its name and everything else
+stayed the same. **SQL written, pending Abdullah running it** on the live project, so the live database does not
+enforce this yet. Remove this line and the matching lines in sections 3 and 7 once Abdullah confirms.
+
+The same SQL, for the Supabase SQL editor:
+
+```sql
+drop policy "orders: delete own" on public.orders;
+
+create policy "orders: delete own" on public.orders for delete to authenticated
+  using (user_id = (select auth.uid()) and status <> 'refused');
+```
+
+The drop has no `if exists` on purpose. Policies of this kind add up, so if the live policy had another name, the
+old one would stay and keep allowing the delete. An error is better than that.
+
+To confirm it took effect:
+
+```sql
+select policyname, cmd, qual
+from pg_policies
+where schemaname = 'public' and tablename = 'orders' and cmd = 'DELETE';
+```
+
+It should return one row, with `qual` reading
+`((user_id = ( SELECT auth.uid() AS uid)) AND (status <> 'refused'::text))`.
+
+Tested by Claude in a throwaway in-memory Postgres (PGlite), on this computer, with a stand-in for Supabase's
+`auth.uid()` and the requests run as the `authenticated` role. It used the real `schema.sql`, from before and after
+this change. The test script was not added to the repo, and the project still has no tests of its own.
+
+| Check | Result |
+|---|---|
+| Old policy: the owner can delete a Refused order, so the test can tell the two apart | ✅ |
+| Migration on a database built from the old schema, with a Refused order already in it: one delete policy, and the owner's delete affects 0 rows and the order stays | ✅ |
+| Waiting, Confirmed, Cancelled, Shipped, Delivered: the owner can delete, another seller can't | ✅ |
+| Refused: another seller and a signed-out request can't delete it | ✅ |
+| `customer_refusals` count unchanged after the blocked deletes | ✅ |
+| Status changes still work, including to and from Refused (so Undo isn't blocked) | ✅ |
+| Known gap still there: Refused to Waiting, then delete, succeeds | ✅ As documented in section 7 |
+| Deleting from the admin role, as the Supabase SQL editor does, and deleting an account, still remove Refused orders. Only sellers' own requests are limited | ✅ |
+| `schema.sql` run twice gives the same policy as the migration | ✅ |
+| The migration stops with an error if the policy name isn't there | ✅ |
+| `npm run build` | ✅ |
+| `npm test` | Not run: the project has no test script |
+
+**Not tested:** the policy on the live database, or through the app. The SQL hasn't been run there yet, and
+testing it as a seller would need a new login, so no login emails were sent. PGlite is real Postgres, but it isn't
+the Supabase project.

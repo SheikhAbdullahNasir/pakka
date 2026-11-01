@@ -39,7 +39,7 @@ create policy "orders: add own"    on public.orders for insert to authenticated
 create policy "orders: change own" on public.orders for update to authenticated
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "orders: delete own" on public.orders for delete to authenticated
-  using (user_id = (select auth.uid()));
+  using (user_id = (select auth.uid()) and status <> 'refused');
 
 grant select, insert, update, delete on public.orders to authenticated;
 
