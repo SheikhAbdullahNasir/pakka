@@ -10,7 +10,7 @@ const sans = Plus_Jakarta_Sans({
 });
 
 const title = 'Pakka · Confirmed orders. Fewer refusals.';
-const description = 'Confirmed orders. Fewer refusals. Confirm cash-on-delivery orders on WhatsApp before they ship.';
+const description = 'Confirm cash-on-delivery orders on WhatsApp before they ship, and get warned about customers who refused before.';
 
 export const metadata = {
   metadataBase: new URL('https://pakkapk.vercel.app'),

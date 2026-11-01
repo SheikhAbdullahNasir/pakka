@@ -2,6 +2,10 @@
 
 Confirmed orders. Fewer refusals.
 
+**Social preview follow-up (2026-11-01).** The preview image now survives a centred square crop, and the meta
+description no longer repeats the slogan. Abdullah checked the icon and link previews on a real Android phone.
+Section 17 has the details.
+
 **Phase 4 step 1: logo (2026-11-01).** The placeholder "P" is replaced by the real mark, a "P" with a tick,
 on the welcome and setup-error screens and in every icon. A social preview image was added. Section 16 lists
 what was tested and what wasn't.
@@ -656,7 +660,41 @@ The mark uses the given geometry exactly, with no optical tweaks. Two placement 
 **Not tested:** installing on a real Android phone or iPhone, so how the launcher crops the maskable icon and
 how iOS rounds the apple-touch icon were only simulated; a real WhatsApp, LinkedIn or X link preview (these
 need the deployed site, and they cache previews); a real browser tab's favicon at 16px (the 16px check drew
-the file at that size in a page); the live site.
+the file at that size in a page); the live site. (Abdullah has since checked the Android icon and the WhatsApp
+and LinkedIn previews, see section 17.)
 
 The font files are the Latin subset from `@fontsource/plus-jakarta-sans` 5.3.0, copied into the repo, not added
 as a dependency. They hold Latin characters only, which is enough because the preview image is English only.
+
+---
+
+## 17. Social preview follow-up (2026-11-01)
+
+WhatsApp and some other apps crop the preview image to a centred square, so everything now sits inside the
+middle 560px (x 320 to 880). The slogan went from 40px to 34px, and "Made for Instagram and WhatsApp sellers in
+Pakistan" is now two lines. The meta description, `og:description` and `twitter:description` are now "Confirm
+cash-on-delivery orders on WhatsApp before they ship, and get warned about customers who refused before."
+
+Tested by Claude on the image from the production build, in headless Edge:
+
+| Check | Result |
+|---|---|
+| `npm run build` | ✅ |
+| Full image: 1200×630, 43 KB. Content runs from x 329 to x 869 | ✅ |
+| Top margin 115px, bottom margin 120px (was 129px and 127px, because the extra line makes the block taller; at least 80px required) | ✅ |
+| Centred 630×630 crop: nothing clipped | ✅ |
+| Built HTML: the description, `og:description` and `twitter:description` have the new text. `og:image` and `twitter:image` are absolute, `twitter:card` is `summary_large_image`, alt text is set | ✅ |
+| Roman Urdu strings | None changed |
+
+Checked by Abdullah on a real Android phone (2026-11-01). This was before this follow-up was deployed, so it
+saw the wider image and the old description:
+
+| Check | Result |
+|---|---|
+| Home screen icon: full-bleed and unclipped | ✅ |
+| WhatsApp preview: image, title and domain show | ✅ |
+| LinkedIn preview: image, title and domain show | ✅ |
+
+**WhatsApp caches previews.** To see the new image there, re-check with `https://pakkapk.vercel.app/?v=2`.
+
+**Not tested:** the new image and description in a real WhatsApp or LinkedIn preview; an iPhone install.

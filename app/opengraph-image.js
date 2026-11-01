@@ -1,4 +1,5 @@
 // The preview image shown when a link to the app is shared. Drawn when the app is built.
+// WhatsApp and some other apps crop it to a centred square, so everything stays within x 320 to 880.
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
@@ -28,12 +29,13 @@ export default async function OpengraphImage() {
       >
         <Mark size={160} colors={HEX_COLORS} />
         <div style={{ marginTop: 24, fontSize: 72, lineHeight: 1.1, fontWeight: 700, color: '#1F4D3A' }}>Pakka</div>
-        <div style={{ marginTop: 12, fontSize: 40, lineHeight: 1.2, fontWeight: 400, color: '#2A2420' }}>
+        <div style={{ marginTop: 12, fontSize: 34, lineHeight: 1.2, fontWeight: 400, color: '#2A2420' }}>
           Confirmed orders. Fewer refusals.
         </div>
         <div style={{ marginTop: 16, fontSize: 28, lineHeight: 1.2, fontWeight: 400, color: '#665B4E' }}>
-          Made for Instagram and WhatsApp sellers in Pakistan
+          Made for Instagram and WhatsApp
         </div>
+        <div style={{ fontSize: 28, lineHeight: 1.2, fontWeight: 400, color: '#665B4E' }}>sellers in Pakistan</div>
       </div>
     ),
     {
