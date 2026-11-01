@@ -935,9 +935,9 @@ That is how the screen really looks.
 
 - `README.md` is rewritten for a visitor with under a minute. The old guide moved to `docs/SETUP.md`.
 - `docs/banner.png` is a static copy of the `app/opengraph-image` output, so GitHub doesn't depend on the live site.
-- Beyond the requested honest limits, two lines were added, because the README's refused-order claim would otherwise
-  overstate it: the known gap of changing status and then deleting (section 7), and that a blocked delete has not been
-  tried on the live database (section 20).
+- Beyond the requested honest limits, one line was added, because the README's refused-order claim would otherwise
+  overstate it: the known gap of changing status and then deleting (section 7). That a blocked delete has not been
+  tried on the live database is recorded in section 20 only; Abdullah removed that line from the README.
 - No license section and no LICENSE file.
 - `docs/SETUP.md` fixes: button names (`+ New`, `···`, `Save and send on WhatsApp`, `Export CSV`, `Mark confirmed`,
   `Try the demo`, `Reset`, `Exit`), 11 sample orders, the welcome screen without Supabase (no longer a note, just no
@@ -952,7 +952,7 @@ That is how the screen really looks.
 | Live site, GitHub profile and portfolio links return 200 | ✅ |
 | LinkedIn link | Not confirmed: LinkedIn answers automated requests with 999. Abdullah supplied the address |
 | README rendered with GitHub's Markdown API, then shown in headless Edge with its image rules, at 880, 680, 390 and 320px | ✅ All images load, no sideways scroll, and the API keeps the `width` and `align` attributes |
-| Screenshot row | ✅ Three across at 880 and 680px. On phones (390 and 320px) the images stack in one column |
+| Screenshot row | Replaced by the one-row layout below |
 | No em dashes or exclamation marks in `README.md` or `docs/SETUP.md` | ✅ |
 | Roman Urdu strings | None changed |
 | `npm test` | Not run: the project has no test script |
@@ -960,3 +960,30 @@ That is how the screen really looks.
 **Not tested:** the README on github.com itself, since the check used GitHub's renderer with GitHub's image rules
 copied by hand. Relative image links on a private repo only show when logged in, so a visitor sees them only once
 the repo is public.
+
+### README fix: one screenshot row (2026-11-01)
+
+Abdullah's screenshots of the README on github.com showed the two-row layout unevenly, with the short refusal card
+next to the tall sheet. `README.md` is the only file changed for this, apart from this section.
+
+- The screenshots are now one row of four at width 165: welcome, Today, new order form and the "···" sheet.
+- The refusal card is no longer shown as an image. It is linked in the "Full length" line, with the two long Today shots.
+- The Honest limits line about the local Postgres test is gone. The detail stays in section 20.
+
+Checked with GitHub's Markdown API in headless Edge, with GitHub's image rules copied by hand:
+
+| Width | Screenshot row |
+|---|---|
+| 880px | ✅ Four in one row, same width and top edge |
+| 680px | 🟡 Three, then the fourth below. The row needs a README column of about 675px; this test's column was 633px |
+| 390px | ✅ Two rows of two |
+| 320px | ✅ One column |
+
+| Check | Result |
+|---|---|
+| `npm run build` | ✅ |
+| All relative image and link targets exist, no sideways scroll at any width above | ✅ |
+| No em dashes or exclamation marks in `README.md` | ✅ |
+| Roman Urdu strings | None changed |
+
+**Not tested:** this new layout on github.com itself, until Abdullah looks at it after this push.

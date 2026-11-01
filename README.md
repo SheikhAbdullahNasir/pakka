@@ -10,17 +10,13 @@ It helps them confirm each order on WhatsApp before it ships, and warns them abo
 ## Screenshots
 
 <p>
-  <img src="docs/screenshots/welcome.png" alt="Welcome screen with the Try the demo button" width="200">
-  <img src="docs/screenshots/today-top.png" alt="Today screen, top of the Waiting for reply section" width="200">
-  <img src="docs/screenshots/new-order-refusal-warning.png" alt="New order form with a refusal warning and Returning customer auto-fill" width="200">
+  <img src="docs/screenshots/welcome.png" alt="Welcome screen with the Try the demo button" width="165">
+  <img src="docs/screenshots/today-top.png" alt="Today screen, top of the Waiting for reply section" width="165">
+  <img src="docs/screenshots/new-order-refusal-warning.png" alt="New order form with a refusal warning and Returning customer auto-fill" width="165">
+  <img src="docs/screenshots/more-actions-sheet.png" alt="Bottom sheet opened from the three dots button, with six statuses and actions" width="165">
 </p>
 
-<p>
-  <img src="docs/screenshots/order-card-refusal-warning.png" alt="Order card for Kamran Shah with the warning Refused 2 times before" width="200" align="top">
-  <img src="docs/screenshots/more-actions-sheet.png" alt="Bottom sheet opened from the three dots button, with six statuses and actions" width="200" align="top">
-</p>
-
-Full length: [Today with all three sections](docs/screenshots/today.png) and [Today in Roman Urdu](docs/screenshots/today-roman-urdu.png).
+Full length: [Today with all three sections](docs/screenshots/today.png), [Today in Roman Urdu](docs/screenshots/today-roman-urdu.png) and [an order card with the refusal warning](docs/screenshots/order-card-refusal-warning.png).
 
 ## Features
 
@@ -59,7 +55,6 @@ Real-phone testing on Android was done by Abdullah.
 - CSV columns are generic and have not been tested with a courier upload.
 - WhatsApp Business API automation is not built.
 - A seller can still change a Refused order to another status and then delete it. The database rule only covers orders that are Refused at the time.
-- That rule was tested on a local Postgres and confirmed present on the live project. A blocked delete has not been tried on the live database.
 
 ## Run it locally
 
