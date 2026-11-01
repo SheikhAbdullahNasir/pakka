@@ -9,4 +9,4 @@ out
 .claude/settings.local.json
 
 # phone-size screenshots for review (not committed)
-screenshots/
+/screenshots/

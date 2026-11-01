@@ -35,6 +35,7 @@ A mobile-first web app for small Pakistani sellers who take cash-on-delivery ord
 | Logo | No longer a placeholder. A "P" with a tick, drawn from paths everywhere, never from a font. The shape lives in `components/Mark.js`; `app/icon.svg` repeats it because it is a static file. |
 | Social preview | `app/opengraph-image.js`, 1200×630, English only. Plus Jakarta Sans is kept as woff in `assets/fonts/` with its OFL licence, because the image generator can't read woff2. |
 | Deployment | Hosting: Vercel, pakkapk.vercel.app. Database: Supabase, Mumbai region. |
+| License | Public repo, unlicensed for now (all rights reserved). Switch to MIT if Pakka is not taken to real users. Don't add a license without Abdullah's decision. |
 
 ---
 
@@ -243,7 +244,7 @@ Same look as the welcome screen, with a clear message that the app is not config
 | 1. Bug fixes + explicit demo mode | Done (commit `763ee31`) |
 | 2. UI and UX redesign per this spec | Done (2026-10-30) |
 | 3. Supabase setup + Vercel deploy | Done (2026-10-30) |
-| 4. Real phone testing, README polish, portfolio write-up | In progress: steps 1 to 4 done |
+| 4. Real phone testing, README polish, portfolio write-up | In progress: steps 1 to 4 done. Step 5 in progress (README done, case study pending) |
 | 5. Dark mode | Optional, later |
 
 ### Phase 2 definition of done

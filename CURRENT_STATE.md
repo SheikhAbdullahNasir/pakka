@@ -2,6 +2,10 @@
 
 Confirmed orders. Fewer refusals.
 
+**Phase 4 step 5, part 1: secret scan, screenshots, README (2026-11-01).** The full git history was scanned and
+is clean. `README.md` is now a short page for visitors, and the setup guide moved to `docs/SETUP.md`. No app code
+changed. Section 21 has the details. The case study is still to come.
+
 **Phase 4 step 4: database rule for refused orders (2026-11-01).** `schema.sql` now refuses to delete a Refused
 order. Abdullah ran the SQL on the live project and confirmed the policy is there. No app code changed. Section 20
 lists what was tested and what wasn't.
@@ -112,7 +116,10 @@ lib/
 supabase/schema.sql      tables, view, RLS policies (paste into Supabase SQL editor)
 .env.local.example       template for the two Supabase env vars
 .claude/launch.json      dev-server config for Claude Code (committed)
-README.md                beginner setup guide
+README.md                short page for visitors
+docs/SETUP.md            beginner setup guide
+docs/banner.png          static copy of the social preview image, for the README
+docs/screenshots/        README screenshots (committed; the root screenshots/ folder stays git-ignored)
 ```
 
 ---
@@ -144,7 +151,7 @@ README.md                beginner setup guide
 
 | Item | Status |
 |---|---|
-| Automatic confirmations via WhatsApp Business Cloud API with approved template | ❌ Not built (intentionally; README describes the plan) |
+| Automatic confirmations via WhatsApp Business Cloud API with approved template | ❌ Not built (intentionally; `docs/SETUP.md` describes the plan) |
 | Customer reply updates the order automatically | ❌ Not built (intentionally) |
 
 ### Tech / delivery
@@ -154,7 +161,7 @@ README.md                beginner setup guide
 | Next.js | ✅ |
 | Supabase database | ✅ **verified**: `schema.sql` was run in a real Supabase project by Abdullah, and the app reads and writes it |
 | Deployed free on Vercel | ✅ https://pakkapk.vercel.app (see section 8) |
-| Beginner explanations | ✅ `README.md` is a step-by-step beginner guide |
+| Beginner explanations | ✅ `docs/SETUP.md` is a step-by-step beginner guide |
 
 ---
 
@@ -871,3 +878,85 @@ this change. The test script was not added to the repo, and the project still ha
 **Not tested:** an actual delete being refused on the live database, or through the app. The live check shows the
 policy is in place, not how it behaves there. Testing it as a seller would need a new login, so no login emails were
 sent. PGlite is real Postgres, but it isn't the Supabase project.
+
+---
+
+## 21. Phase 4 step 5, part 1: secret scan, screenshots, README (2026-11-01)
+
+No app code changed. Git history was not rewritten, and repo visibility was not changed. Making the repo public is
+Abdullah's step. `.gitignore` now says `/screenshots/`, so only the root folder is ignored and `docs/screenshots/`
+can be committed.
+
+### Secret and personal-data scan: clean
+
+Scanned by Claude: all 15 commits on all refs (`main` and `origin/main`, no tags or stashes, no dangling objects),
+as full diffs including removed lines, plus commit messages, up to and including `d4d1a76`. The two binary files
+ever committed are font files from `@fontsource`, and their contents were not searched.
+
+| Looked for | Result |
+|---|---|
+| The real values in this computer's `.env.local` (full values and the project address) | Not found anywhere. Compared without printing them |
+| `.env` files, keys, certificates, `.vercel`, `settings.local.json` ever committed | None. Only `.env.local.example`, added in `dafd7b7`, with placeholders in its only version |
+| Anything starting with `eyJ`, in any case | None |
+| `sb_secret` | None |
+| `sb_publishable_` | Placeholder only: `sb_publishable_xxxxxxxx` in the setup guide (`dafd7b7`) |
+| `service_role` | One warning sentence in the setup guide (`dafd7b7`), no value |
+| Supabase addresses | Placeholders only: `abcdefgh.supabase.co` (`dafd7b7`, `e751f43`), `your-project-id.supabase.co` (`dafd7b7`) |
+| API tokens (GitHub, Slack, Stripe, AWS, Vercel, Resend, bearer, private keys), and long opaque strings | None. The long strings found were a GitHub path, placeholder text, a UUID template and comment rules |
+| Email addresses in file contents | None |
+| Email addresses in commit data | `abdullah.nasir7312@gmail.com` as author and committer on all 15 commits, and `noreply@anthropic.com` in Co-Authored-By lines. Neither is in the files |
+| Phone numbers | Demo numbers in `lib/data.js`, and made-up examples `0300-1234567` and `923001234567` (same number) in docs, UI hints and comments. `0321-1234567` in docs is Kamran Shah's demo number |
+| `package-lock.json` download addresses | `registry.npmjs.org` only |
+
+This was a pattern search, not a dedicated scanning tool such as gitleaks. The screenshots added in this step show
+demo data only, and Supabase was blocked while they were taken.
+
+### Screenshots
+
+In `docs/screenshots/`. Demo mode on a production build (`next start`), headless Edge, 360px wide, device scale
+factor 3, so 1,080px wide files. Optimised to 256-colour PNG, which was smaller than WebP at quality 90 for every
+shot, with no visible loss when checked by eye.
+
+| File | Shows | Height in CSS px | Size |
+|---|---|---|---|
+| `welcome.png` | Welcome, English | 780 | 50 KB |
+| `today-top.png` | Today, first screen. Not in the requested list; added so the README row has equal heights | 780 | 68 KB |
+| `today.png` | Today, all three sections | 1,850 | 156 KB |
+| `order-card-refusal-warning.png` | Kamran Shah's card, "Refused 2 times before" | 256 | 22 KB |
+| `new-order-refusal-warning.png` | New order, refusal warning, "Returning customer · 3 orders before", name, city and address filled in | 780 | 49 KB |
+| `more-actions-sheet.png` | The "···" sheet, for Ayesha Khan's order | 780 | 46 KB |
+| `today-roman-urdu.png` | Today in Roman Urdu, all three sections | 1,940 | 165 KB |
+
+The two full-length Today shots use a viewport as tall as the page, so the bottom bar sits under the last card.
+The order form's city chips scrolled themselves to show the selected city, which cuts "Rawalpindi" at the left edge.
+That is how the screen really looks.
+
+### README
+
+- `README.md` is rewritten for a visitor with under a minute. The old guide moved to `docs/SETUP.md`.
+- `docs/banner.png` is a static copy of the `app/opengraph-image` output, so GitHub doesn't depend on the live site.
+- Beyond the requested honest limits, two lines were added, because the README's refused-order claim would otherwise
+  overstate it: the known gap of changing status and then deleting (section 7), and that a blocked delete has not been
+  tried on the live database (section 20).
+- No license section and no LICENSE file.
+- `docs/SETUP.md` fixes: button names (`+ New`, `···`, `Save and send on WhatsApp`, `Export CSV`, `Mark confirmed`,
+  `Try the demo`, `Reset`, `Exit`), 11 sample orders, the welcome screen without Supabase (no longer a note, just no
+  email button), the folder list, the CSV phone format, and "tell me which courier", which was left over from a chat.
+
+### Tests
+
+| Check | Result |
+|---|---|
+| `npm run build` | ✅ |
+| All 11 relative image and link targets in `README.md`, and the one in `docs/SETUP.md`, exist | ✅ |
+| Live site, GitHub profile and portfolio links return 200 | ✅ |
+| LinkedIn link | Not confirmed: LinkedIn answers automated requests with 999. Abdullah supplied the address |
+| README rendered with GitHub's Markdown API, then shown in headless Edge with its image rules, at 880, 680, 390 and 320px | ✅ All images load, no sideways scroll, and the API keeps the `width` and `align` attributes |
+| Screenshot row | ✅ Three across at 880 and 680px. On phones (390 and 320px) the images stack in one column |
+| No em dashes or exclamation marks in `README.md` or `docs/SETUP.md` | ✅ |
+| Roman Urdu strings | None changed |
+| `npm test` | Not run: the project has no test script |
+
+**Not tested:** the README on github.com itself, since the check used GitHub's renderer with GitHub's image rules
+copied by hand. Relative image links on a private repo only show when logged in, so a visitor sees them only once
+the repo is public.
