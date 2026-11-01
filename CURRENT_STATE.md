@@ -2,6 +2,8 @@
 
 Confirmed orders. Fewer refusals.
 
+**Leading 0 wording (2026-11-02).** The brief, the case study and section 19 no longer name Excel as the app that dropped the leading 0, because it was most likely WPS Office. `npm run build` passes, and no app code changed.
+
 **Project brief (2026-11-02).** `docs/PROJECT_BRIEF.md` added, for pasting into AI chats; its links resolve, `npm run build` passes, and no app code changed.
 
 **Phase 4 step 5, part 2: case study (2026-11-01).** `docs/CASE_STUDY.md` added and linked from the README. Phase 4
@@ -799,7 +801,7 @@ come from Abdullah; Claude did not run these.
 | Save and send on WhatsApp: the WhatsApp app opened with the message filled in; the order was saved and showed the message as sent | ✅ |
 | Remind: the same | ✅ |
 | Export CSV: the file downloaded and opened in Excel; the mark-as-shipped prompt worked | ✅ |
-| Phone numbers in Excel | ❌ Leading 0 dropped (`3001234567`), because Excel treats the column as a number. Fixed below |
+| Phone numbers in a spreadsheet app on Abdullah's phone (most likely WPS Office, which opens CSV files on that phone) | ❌ Leading 0 dropped (`3001234567`), because the app treats the column as a number. Fixed below |
 
 That was the only problem found.
 

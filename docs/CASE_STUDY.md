@@ -29,7 +29,7 @@ Other choices that shaped it: refusal history is private to each seller and enfo
 
 **Urdu needs more space than English.** The buttons fit fine in English on a small phone. In Roman Urdu, labels like "Deliver mark karein" are longer, and two buttons no longer fit in one row. Designing in one language and translating later doesn't work. I now check every screen in both languages at the smallest width, and we added a layout rule for when buttons don't fit.
 
-**Excel drops the leading zero.** Everything worked in testing, until I exported the CSV on my own phone and opened it. Every number was missing its first 0. The file was correct, but spreadsheet apps see `03001234567` as a number and remove the zero. Adding a dash makes it text, so the 0 stays. I only found this because I tested on a real phone, the way a seller would actually use it.
+**Spreadsheets drop the leading zero.** Everything worked in testing, until I exported the CSV on my own phone and opened it. Every number was missing its first 0. The file was correct, but spreadsheet apps see `03001234567` as a number and remove the zero. Adding a dash makes it text, so the 0 stays. I only found this because I tested on a real phone, the way a seller would actually use it.
 
 ## How it was built
 

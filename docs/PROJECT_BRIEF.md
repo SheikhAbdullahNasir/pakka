@@ -52,7 +52,7 @@ Planned with Claude, implemented with Claude Code, driven by two documents: PROJ
 ## Lessons
 
 - Roman Urdu labels are longer than English and broke button rows on small phones, so every screen is now checked in both languages at the smallest width
-- Excel and WPS dropped the leading 0 from phone numbers; found only by testing the export on a real phone
+- A spreadsheet app on the phone dropped the leading 0 from phone numbers; found only by testing the export on a real phone
 
 ## Verified
 
