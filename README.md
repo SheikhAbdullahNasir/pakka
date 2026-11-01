@@ -46,6 +46,8 @@ Built in about 2.5 days (25 to 30 hours) by Abdullah Bin Nasir, planned with Cla
 Two files drove the work: [PROJECT_SPEC.md](PROJECT_SPEC.md) says what it should be, and [CURRENT_STATE.md](CURRENT_STATE.md) says what it does today, with what was and wasn't tested.
 Real-phone testing on Android was done by Abdullah.
 
+Longer write-up: [docs/CASE_STUDY.md](docs/CASE_STUDY.md)
+
 ## Honest limits
 
 - No real sellers yet. This is a portfolio project.

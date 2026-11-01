@@ -2,6 +2,9 @@
 
 Confirmed orders. Fewer refusals.
 
+**Phase 4 step 5, part 2: case study (2026-11-01).** `docs/CASE_STUDY.md` added and linked from the README. Phase 4
+is done. No app code changed. Section 22 has the details.
+
 **Phase 4 step 5, part 1: secret scan, screenshots, README (2026-11-01).** The full git history was scanned and
 is clean. `README.md` is now a short page for visitors, and the setup guide moved to `docs/SETUP.md`. No app code
 changed. Section 21 has the details. The case study is still to come.
@@ -118,6 +121,7 @@ supabase/schema.sql      tables, view, RLS policies (paste into Supabase SQL edi
 .claude/launch.json      dev-server config for Claude Code (committed)
 README.md                short page for visitors
 docs/SETUP.md            beginner setup guide
+docs/CASE_STUDY.md       case study, written by Abdullah
 docs/banner.png          static copy of the social preview image, for the README
 docs/screenshots/        README screenshots (committed; the root screenshots/ folder stays git-ignored)
 ```
@@ -394,8 +398,8 @@ git-ignored (`.gitignore` line 6), and has never been committed (**verified**).
 
 - **Git:** ✅ Yes. One branch, `main`. Every change is committed and pushed to it.
 - **GitHub:** ✅ Remote `origin` = `https://github.com/SheikhAbdullahNasir/pakka.git` (renamed from `cod-confirmer` on 2026-10-30).
-  The public GitHub API returned 404 for the repo at audit time, which means it is **private** (or not
-  visible without login).
+  The repo is **public**, made so by Abdullah after the history scan in section 21 (the public GitHub API reports
+  `"visibility": "public"`, checked 2026-11-01). It has no license (see the decisions log in `PROJECT_SPEC.md`).
 - **Vercel:** ✅ **Deployed** at https://pakkapk.vercel.app (Vercel project `pakka`). It deploys
   automatically on every push to `main`. `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
   are set for Production and Preview.
@@ -987,3 +991,29 @@ Checked with GitHub's Markdown API in headless Edge, with GitHub's image rules c
 | Roman Urdu strings | None changed |
 
 **Not tested:** this new layout on github.com itself, until Abdullah looks at it after this push.
+
+---
+
+## 22. Phase 4 step 5, part 2: case study (2026-11-01)
+
+`docs/CASE_STUDY.md` is Abdullah's text, added word for word. `README.md` gained one line under "How it was built",
+linking to it. `PROJECT_SPEC.md` section 8 marks Phase 4 done. No app code changed.
+
+| Check | Result |
+|---|---|
+| `npm run build` | ✅ |
+| Case study links: the live site and the GitHub repo return 200, logged out | ✅ |
+| Case study has no relative links. `PROJECT_SPEC.md` and `CURRENT_STATE.md` are named in code style, and both exist | ✅ |
+| README's new link: `docs/CASE_STUDY.md` exists | ✅ |
+| Case study renders with GitHub's Markdown API | ✅ |
+| Roman Urdu strings | None changed |
+| `npm test` | Not run: the project has no test script |
+
+Two lines in the case study go further than the tests in this file. They are kept as written, since the text is
+Abdullah's:
+
+- "adds an order in a few seconds": adding an order was never timed (section 2, feature 1).
+- "A link works on any phone today": WhatsApp opening was checked on one real Android phone (section 19).
+
+The case study's statements about the idea's origin and the rejected logo options come from Abdullah, and aren't
+recorded elsewhere in this file.
