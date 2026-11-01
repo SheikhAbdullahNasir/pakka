@@ -125,7 +125,7 @@ export default function Login({ onTryDemo, linkFailed }) {
         )}
       </main>
 
-      <p className="welcome-foot">{t('slogan')}</p>
+      <p className="welcome-foot">{t('welcomeFoot')}</p>
     </div>
   );
 }

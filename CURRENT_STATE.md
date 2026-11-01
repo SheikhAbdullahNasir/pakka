@@ -2,6 +2,9 @@
 
 Confirmed orders. Fewer refusals.
 
+**Phase 4 step 2: welcome copy (2026-11-01).** The slogan moved from the footer to under the "Pakka" wordmark,
+and the footer is "Made for Instagram and WhatsApp sellers in Pakistan" again. Section 18 lists what was tested.
+
 **Social preview follow-up (2026-11-01).** The preview image now survives a centred square crop, and the meta
 description no longer repeats the slogan. Abdullah checked the icon and link previews on a real Android phone.
 Section 17 has the details.
@@ -83,7 +86,7 @@ components/
   App.js                 login check, demo on/off, config-error screen, data loading, tabs, toast/undo, CSV export
   Login.js               email sign-in link + "Try demo" button
   LangToggle.js          "EN | Urdu" language chip
-  Brand.js               logo tile and "Pakka" wordmark
+  Brand.js               logo tile, "Pakka" wordmark and slogan
   Mark.js                the logo's shape and colours, the one source of truth
   Icons.js               bottom bar icons
   OrderForm.js           add / edit order sheet
@@ -697,4 +700,58 @@ saw the wider image and the old description:
 
 **WhatsApp caches previews.** To see the new image there, re-check with `https://pakkapk.vercel.app/?v=2`.
 
-**Not tested:** the new image and description in a real WhatsApp or LinkedIn preview; an iPhone install.
+Re-checked by Abdullah on a real Android phone in WhatsApp, after `febce44` deployed (2026-11-01):
+
+| Check | Result |
+|---|---|
+| Square thumbnail: all content shows, unclipped | ✅ |
+| Sent preview: shows the new description | ✅ |
+
+**Not tested:** the new image and description in a real LinkedIn preview; an iPhone install.
+
+---
+
+## 18. Phase 4 step 2: welcome copy, what was tested (2026-11-01)
+
+The slogan is now directly under the "Pakka" wordmark (14px, `--text-secondary`, weight 400) and switches with
+the language. The footer is `welcomeFoot` in `lib/i18n.js`, which had been removed in the rename, so it was
+added back with its old wording in both languages. The setup-error screen shares `Brand.js` and the same footer.
+
+The English footer doesn't fit on one line at 360px. It first wrapped with "Pakistan" alone on line two, so
+`.welcome-foot` got `text-wrap: balance`. It now reads "Made for Instagram and / WhatsApp sellers in Pakistan",
+at the same height. An older browser without `text-wrap: balance` shows the first wrap, which is harmless.
+
+Browser: headless Edge at 1× pixel density, against production builds (`next start`). The "before" numbers were
+measured the same way on the previous commit, and they match section 14's 727px and 761px exactly. Supabase was
+blocked during the runs, so no email was sent. "Error" was checked with both the expired-link message (a made-up
+error address) and the internet-failure message (a blocked request). Both give the same height in every state.
+
+Page height in px, before → after:
+
+| Screen | State | English | Urdu |
+|---|---|---|---|
+| 360×780 | Default, email open, email and error | 780 → 780 | 780 → 780 |
+| 412×860 | Default, email open, email and error | 860 → 860 | 860 → 860 |
+| 360×640 | Default | 640 → 640 | 640 → 640 |
+| 360×640 | Email open | 683 → 703 | 716 → 716 |
+| 360×640 | Email and error | 727 → 748 | 761 → 761 |
+
+The only growth is English at 360×640 with the email field open: 20px, or 21px with the error showing, from the
+footer's second line. That is within the limit of about 20px Abdullah set. Short phones already scrolled in these
+states. The tile row stays 56px tall, because the wordmark and slogan fit inside the tile's height.
+
+| Check | Result |
+|---|---|
+| All 24 combinations of size, language and state: no sideways scroll, no clipped text, no element off screen, smallest tap target 48px | ✅ |
+| Slogan: one line in every combination, 0px from the wordmark and 29px above the headline, switches with the language | ✅ |
+| Content block centred above the footer, footer pinned to the bottom (24px gap) | ✅ |
+| Setup-error in a production build with no env vars, at all three sizes, English and Urdu: new slogan and footer, no scroll, no overflow | ✅ |
+| `npm run build` | ✅ |
+
+New Roman Urdu string for Abdullah's review: `welcomeFoot`, "Pakistan ke Instagram aur WhatsApp sellers ke liye"
+(the same wording used before the rename). No other Roman Urdu strings changed. The Urdu line fits on one line at
+360px with almost no room to spare, so a phone with slightly wider text could wrap it to two lines.
+
+**Not tested:** a real phone; the sent-link state, which needs a real email; the live site.
+
+Screenshots are in `screenshots/welcome-copy/`, which is git-ignored.

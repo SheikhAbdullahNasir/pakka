@@ -1,11 +1,16 @@
+import { useLang } from '@/lib/i18n';
 import Mark from './Mark';
 
-// The tile and the name, on the welcome and setup-error screens.
+// The tile, the name and the slogan, on the welcome and setup-error screens.
 export default function Brand() {
+  const { t } = useLang();
   return (
     <div className="brand">
       <Mark size={56} />
-      <span className="wordmark">Pakka</span>
+      <div className="brand-text">
+        <span className="wordmark">Pakka</span>
+        <span className="brand-slogan">{t('slogan')}</span>
+      </div>
     </div>
   );
 }

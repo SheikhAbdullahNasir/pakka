@@ -346,7 +346,9 @@ input:focus, textarea:focus { outline: none; border: 2px solid var(--primary); p
 /* The content block sits in the middle of the space between the language chip and the footer. */
 .welcome-main { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-top: 24px; }
 .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.brand-text { display: flex; flex-direction: column; }
 .wordmark { font-size: 18px; font-weight: 700; color: var(--primary); }
+.brand-slogan { font-size: 14px; font-weight: 400; color: var(--text-secondary); }
 .welcome h1 { font-size: 28px; line-height: 1.2; font-weight: 700; color: var(--primary); }
 .welcome .lede { margin: 12px 0 32px; color: var(--text-secondary); }
 .welcome .helper { font-size: 14px; color: var(--text-secondary); margin: 8px 0 16px; text-align: center; }
@@ -354,7 +356,7 @@ input:focus, textarea:focus { outline: none; border: 2px solid var(--primary); p
 .welcome form .field { margin-bottom: 8px; }
 .welcome form .link-btn { align-self: center; }
 .sent-to { font-weight: 600; overflow-wrap: anywhere; margin-bottom: 8px; }
-.welcome-foot { font-size: 14px; color: var(--text-secondary); text-align: center; padding-top: 32px; }
+.welcome-foot { font-size: 14px; color: var(--text-secondary); text-align: center; text-wrap: balance; padding-top: 32px; }
 .code-block {
   font-family: ui-monospace, Consolas, monospace; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere;
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-btn);

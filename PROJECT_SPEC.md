@@ -107,14 +107,14 @@ In the "···" sheet, all six chips use a light background, so none looks like 
 ### 4.1 Welcome / login
 
 - Small language chip top right (EN / Urdu).
-- The logo tile (see 3.5) with "Pakka" as a small wordmark next to it.
+- The logo tile (see 3.5) with "Pakka" as a small wordmark next to it, and the slogan directly under the wordmark as a small secondary line (14px, `--text-secondary`, weight 400). The slogan switches language with the toggle.
 - Headline: "Stop paying for refused COD orders".
 - One-line description: confirm every order on WhatsApp before it ships, and get warned about customers who refused before.
 - Primary button: **Try the demo**. Helper text below: demo needs no account.
 - Secondary (outline) button: **Log in with email**. Tapping it reveals the email field in place.
 - After sending, this shows in place: "Check your email and tap the sign-in link. Open it on this phone.", the email it was sent to, a **Send again** button with a 60-second cooldown, and a "Use a different email" link.
 - Returning from the link signs the seller in and lands on Today, with nothing left in the address. A link that expired or was already used returns to this screen with a friendly message.
-- Footer line: the slogan, which switches language with the toggle. It stays at the bottom, and the content block is centered vertically in the space above it.
+- Footer line: "Made for Instagram and WhatsApp sellers in Pakistan" (Urdu: "Pakistan ke Instagram aur WhatsApp sellers ke liye"), which switches language with the toggle. It stays at the bottom, and the content block is centered vertically in the space above it.
 - When Supabase is not configured in development, hide the email option and keep demo only. No red error box on this screen.
 
 ### 4.2 App shell

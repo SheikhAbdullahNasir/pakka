@@ -119,7 +119,7 @@ function ConfigError() {
         <pre className="code-block">{'NEXT_PUBLIC_SUPABASE_URL\nNEXT_PUBLIC_SUPABASE_ANON_KEY'}</pre>
         <p className="muted">{t('configErrorFix')}</p>
       </main>
-      <p className="welcome-foot">{t('slogan')}</p>
+      <p className="welcome-foot">{t('welcomeFoot')}</p>
     </div>
   );
 }
