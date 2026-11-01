@@ -2,6 +2,10 @@
 
 Confirmed orders. Fewer refusals.
 
+**Phase 4 step 1: logo (2026-11-01).** The placeholder "P" is replaced by the real mark, a "P" with a tick,
+on the welcome and setup-error screens and in every icon. A social preview image was added. Section 16 lists
+what was tested and what wasn't.
+
 **Rename to Pakka (2026-10-30).** The app was called COD Confirmer until now. The name, slogan, "P" tile
 and icons changed; features, layout and colours did not. The localStorage keys keep their old
 `cod-confirmer-*` names on purpose, so existing demo data and language choice survive. Section 14 lists
@@ -58,7 +62,7 @@ Legend: ✅ works (by code reading + successful build) · 🟡 partly works · �
 | Tests / linter | None | |
 
 The whole app is one client-side page (`'use client'`). There are no API routes and no server code
-except the PWA icon generator. All database calls go straight from the browser to Supabase.
+except the icon and preview image generators, which run at build time. All database calls go straight from the browser to Supabase.
 
 ```
 app/
@@ -67,12 +71,16 @@ app/
   globals.css            all styles and colour variables (light mode only; dark mode is a later phase)
   manifest.js            PWA manifest ("Add to Home screen")
   icon.svg               favicon
+  apple-icon.js          generates the 180×180 iPhone home-screen icon at build time
+  opengraph-image.js     generates the 1200×630 social preview image at build time
   pwa-icon/[size]/route.js  generates 192, 512 and maskable PNG icons at build time
+assets/fonts/            Plus Jakarta Sans 400 and 700 as woff, for the preview image, with OFL.txt
 components/
   App.js                 login check, demo on/off, config-error screen, data loading, tabs, toast/undo, CSV export
   Login.js               email sign-in link + "Try demo" button
   LangToggle.js          "EN | Urdu" language chip
-  Brand.js               "P" tile and "Pakka" wordmark
+  Brand.js               logo tile and "Pakka" wordmark
+  Mark.js                the logo's shape and colours, the one source of truth
   Icons.js               bottom bar icons
   OrderForm.js           add / edit order sheet
   OrderCard.js           one order + main action button, and the "···" bottom sheet
@@ -260,7 +268,7 @@ Not covered / always English:
 - Language chip labels "EN" / "Urdu" and the message-language buttons "Roman Urdu" / "English"
   (intentional).
 - City quick-pick chips (Karachi, Lahore, …) are city names, the same in both languages.
-- App name "Pakka", the `aria-label="Language"`, the amount placeholder "2,500", "Rs", the "P" monogram.
+- App name "Pakka", the `aria-label="Language"`, the amount placeholder "2,500", "Rs", the social preview image.
 - `<html lang>` now follows the toggle (`en` / `ur`), set from `App.js`. The server-rendered HTML
   still starts as `lang="en"` until the page loads.
 - The app always starts in English for a split second before the saved language loads
@@ -305,7 +313,8 @@ No `TODO` or `FIXME` comments exist in the code.
 |---|---|
 | Common cities list (16 Pakistani cities; the first 7 are quick-pick chips) | `components/OrderForm.js` |
 | Message templates (Roman Urdu and English) | `lib/messages.js` |
-| Colours: all as variables in `app/globals.css` (table in `PROJECT_SPEC.md` 3.1/3.2). Browser bar / PWA background `#F6EFE3`, icon `#1F4D3A` with cream "P" | `app/layout.js`, `app/manifest.js`, `app/icon.svg`, `app/pwa-icon/[size]/route.js` |
+| Colours: all as variables in `app/globals.css` (table in `PROJECT_SPEC.md` 3.1/3.2). Browser bar / PWA background `#F6EFE3`. Generated images can't read CSS variables, so they use the same colours as hex | `app/layout.js`, `app/manifest.js`, `app/icon.svg`, `components/Mark.js`, `app/opengraph-image.js` |
+| Site address for share links, `https://pakkapk.vercel.app` (`metadataBase`). If the domain changes, this must change too | `app/layout.js` |
 | Load limit 1000 orders; page size 50 | `lib/data.js`, `components/OrdersView.js` |
 | Undo/toast 5 s; 400 ms delay before "mark shipped?" | `components/App.js` |
 | Settings preview sample (Ayesha, 2 lawn suits, Rs 4500, Lahore) | `components/SettingsView.js`, `lib/i18n.js` |
@@ -364,7 +373,7 @@ git-ignored (`.gitignore` line 6), and has never been committed (**verified**).
   Abdullah created a project, ran `schema.sql` and put the two values in `.env.local`. It holds test data
   from Phase 3 part 1: account one has 6 test orders and a test shop name, account two is empty.
 - **Build:** ✅ `npm run build` succeeds (Next.js 16.4.3, Turbopack; re-checked in Phase 3 part 1). Routes: `/` (static),
-  `/manifest.webmanifest`, `/icon.svg`, `/pwa-icon/192`, `/pwa-icon/512`, `/pwa-icon/maskable`.
+  `/manifest.webmanifest`, `/icon.svg`, `/apple-icon`, `/opengraph-image`, `/pwa-icon/192`, `/pwa-icon/512`, `/pwa-icon/maskable`.
 
 ---
 
@@ -582,6 +591,7 @@ still called `COD Confirmer`. The Supabase project keeps whatever name it was gi
 
 The PNG home-screen icons draw "P" in a regular-weight font, because the icon generator only has that font
 built in. The favicon and welcome tile are bold. This is left as is, because the tile is a placeholder.
+(Gone since section 16: all icons are now drawn from paths, with no font.)
 
 ---
 
@@ -609,3 +619,44 @@ Checked by Abdullah on a real Android phone in Chrome, on the live site:
 **Still unverified:** WhatsApp opening, CSV download, and a low-end device test.
 
 `npm run build` passes (run by Claude).
+
+---
+
+## 16. Phase 4 step 1: logo and brand assets, what was tested (2026-11-01)
+
+Browser: headless Edge at 1× pixel density, against production builds (`next start`) on this computer. Welcome
+was checked with the Supabase settings, setup-error without them. Screenshots are in `screenshots/brand/`,
+which is git-ignored.
+
+The mark uses the given geometry exactly, with no optical tweaks. Two placement notes:
+- With its tile, the mark is not mathematically centred: 4 units right of centre and 1 unit low on the 120 grid.
+  The heavy stem on the left balances it by eye, so it was left alone, and Abdullah kept it. This also applies
+  to the apple-touch icon.
+- In the maskable icon, the mark is centred by its own bounds. The limit is the top and bottom of the stem.
+- The welcome tile's corners went from a 16px radius (the old `.monogram` CSS, now removed) to about 13px,
+  which is the given `rx` 28 at 56px. The tile's size and position did not change.
+
+| Check | Result |
+|---|---|
+| `npm run build` | ✅ |
+| `/icon.svg`: 200, `image/svg+xml`, 392 bytes, paths only, no `<text>` | ✅ |
+| `/pwa-icon/192`, `/pwa-icon/512`: right size, rounded tile, transparent corners (alpha 0 measured) | ✅ |
+| `/pwa-icon/maskable`: 512×512, opaque corners, no rounded corners | ✅ |
+| Maskable, farthest painted pixel from the centre: 69.66% of the icon's width as a diameter, so inside the 70% circle. Screenshot with the 80% circle overlaid and with a real circular crop: nothing clipped | ✅ |
+| `/apple-icon`: 180×180, opaque, square corners, linked as `apple-touch-icon` | ✅ |
+| Manifest: unchanged, because the icon addresses stayed the same. All three entries load | ✅ |
+| `/opengraph-image`: 1200×630, 43 KB. Content is 256px from the left and right edges, 129px from the top, 127px from the bottom (at least 80px required) | ✅ |
+| Built HTML: `og:image` and `twitter:image` are absolute `https://pakkapk.vercel.app/opengraph-image?…` addresses, `twitter:card` is `summary_large_image`, `og:image:alt` and `twitter:image:alt` are set | ✅ |
+| Mark at 32px: tick clearly a tick | ✅ |
+| Mark at 16px: the P is clear and the mustard is visible. The rising stroke survives, but the short left arm merges into it, so it reads as a mustard hook more than a tick | ✅ Accepted as is by Abdullah, no variant made |
+| Welcome at 360px and 412px, English and Urdu: tile, wordmark, headline and footer positions and sizes are identical to the old screen, measured before and after. No sideways or up-and-down scroll | ✅ |
+| Setup-error at 360px and 412px, English and Urdu: tile right, no overflow | ✅ |
+| Roman Urdu strings | None changed. `lib/i18n.js` was not touched |
+
+**Not tested:** installing on a real Android phone or iPhone, so how the launcher crops the maskable icon and
+how iOS rounds the apple-touch icon were only simulated; a real WhatsApp, LinkedIn or X link preview (these
+need the deployed site, and they cache previews); a real browser tab's favicon at 16px (the 16px check drew
+the file at that size in a page); the live site.
+
+The font files are the Latin subset from `@fontsource/plus-jakarta-sans` 5.3.0, copied into the repo, not added
+as a dependency. They hold Latin characters only, which is enough because the preview image is English only.

@@ -31,7 +31,9 @@ A mobile-first web app for small Pakistani sellers who take cash-on-delivery ord
 | Today view | Shows all orders that need action, not only orders created today |
 | Courier CSV | Generic columns, no courier-specific formats |
 | Login | Magic link only. Free plan locks email templates; custom SMTP stays out of scope. |
-| Brand | Name: Pakka. Slogan: 'Confirmed orders. Fewer refusals.' (Urdu: 'Pakke orders. Kam refusals.'). Logo: placeholder 'P' tile until a logo is designed. |
+| Brand | Name: Pakka. Slogan: 'Confirmed orders. Fewer refusals.' (Urdu: 'Pakke orders. Kam refusals.'). |
+| Logo | No longer a placeholder. A "P" with a tick, drawn from paths everywhere, never from a font. The shape lives in `components/Mark.js`; `app/icon.svg` repeats it because it is a static file. |
+| Social preview | `app/opengraph-image.js`, 1200×630, English only. Plus Jakarta Sans is kept as woff in `assets/fonts/` with its OFL licence, because the image generator can't read woff2. |
 | Deployment | Hosting: Vercel, pakkapk.vercel.app. Database: Supabase, Mumbai region. |
 
 ---
@@ -93,7 +95,10 @@ In the "···" sheet, all six chips use a light background, so none looks like 
 ### 3.5 Theme
 
 - Force light mode: `color-scheme: light`, remove all `prefers-color-scheme: dark` styles.
-- `theme-color` meta and PWA manifest background: `#F6EFE3`. PWA icon: `#1F4D3A` background with a cream "P" monogram (placeholder until a logo is designed), plus a maskable version with safe padding.
+- `theme-color` meta and PWA manifest background: `#F6EFE3`. Icons all use the mark: a `#FFF6E6` "P" with a `#E3A93B` tick on `#1F4D3A`.
+- Favicon and PWA icons 192 and 512: rounded tile (`rx` 28 on a 120 grid), transparent corners.
+- Maskable: full-bleed `#1F4D3A` square, no tile, with the P and tick inside a centred circle of 70% diameter.
+- Apple touch icon: 180×180, full-bleed square with no rounded corners, because iOS rounds it.
 
 ---
 
@@ -102,7 +107,7 @@ In the "···" sheet, all six chips use a light background, so none looks like 
 ### 4.1 Welcome / login
 
 - Small language chip top right (EN / Urdu).
-- "P" monogram tile with "Pakka" as a small wordmark next to it.
+- The logo tile (see 3.5) with "Pakka" as a small wordmark next to it.
 - Headline: "Stop paying for refused COD orders".
 - One-line description: confirm every order on WhatsApp before it ships, and get warned about customers who refused before.
 - Primary button: **Try the demo**. Helper text below: demo needs no account.
