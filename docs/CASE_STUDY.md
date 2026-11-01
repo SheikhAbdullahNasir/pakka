@@ -13,11 +13,11 @@ Tools for this already exist, but they're mostly Shopify apps. Many sellers don'
 
 ## What I built
 
-Pakka is a phone-first web app. A seller adds an order in a few seconds, taps one button, and WhatsApp opens with a confirmation message already typed. When a number that refused before places a new order, the app shows a warning like "Refused 2 times before" right on the order. A Today screen shows what needs action, and confirmed orders can be exported as a CSV for the courier. It works in English and Roman Urdu, and anyone can try it with a demo, no account needed.
+Pakka is a phone-first web app. A seller adds an order quickly, taps one button, and WhatsApp opens with a confirmation message already typed. When a number that refused before places a new order, the app shows a warning like "Refused 2 times before" right on the order. A Today screen shows what needs action, and confirmed orders can be exported as a CSV for the courier. It works in English and Roman Urdu, and anyone can try it with a demo, no account needed.
 
 ## Decisions I made
 
-**WhatsApp links, not automation.** The app never sends a message on its own. It only builds a `wa.me` link, and the seller presses send. Automating it would need the WhatsApp Business API, approved templates and running costs. A link works on any phone today, and the seller stays in control of what goes to their customers.
+**WhatsApp links, not automation.** The app never sends a message on its own. It only builds a `wa.me` link, and the seller presses send. Automating it would need the WhatsApp Business API, approved templates and running costs. A link needs no setup or approval, and the seller stays in control of what goes to their customers.
 
 **The logo.** "Pakka" means confirmed, so the mark is a P with a tick inside it. I checked it at 16px, where favicons actually show up, before settling on it, and rejected options that looked good large but turned to mush small.
 

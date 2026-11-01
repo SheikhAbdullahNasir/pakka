@@ -996,7 +996,7 @@ Checked with GitHub's Markdown API in headless Edge, with GitHub's image rules c
 
 ## 22. Phase 4 step 5, part 2: case study (2026-11-01)
 
-`docs/CASE_STUDY.md` is Abdullah's text, added word for word. `README.md` gained one line under "How it was built",
+`docs/CASE_STUDY.md` is Abdullah's text, added word for word, with the two later rewordings below. `README.md` gained one line under "How it was built",
 linking to it. `PROJECT_SPEC.md` section 8 marks Phase 4 done. No app code changed.
 
 | Check | Result |
@@ -1009,11 +1009,13 @@ linking to it. `PROJECT_SPEC.md` section 8 marks Phase 4 done. No app code chang
 | Roman Urdu strings | None changed |
 | `npm test` | Not run: the project has no test script |
 
-Two lines in the case study go further than the tests in this file. They are kept as written, since the text is
-Abdullah's:
+Two lines in the case study went further than the tests in this file. Abdullah reworded both, so they no longer
+claim untested things:
 
-- "adds an order in a few seconds": adding an order was never timed (section 2, feature 1).
-- "A link works on any phone today": WhatsApp opening was checked on one real Android phone (section 19).
+- "adds an order in a few seconds" is now "adds an order quickly". Adding an order was never timed (section 2,
+  feature 1).
+- "A link works on any phone today" is now "A link needs no setup or approval". WhatsApp opening was checked on one
+  real Android phone (section 19).
 
 The case study's statements about the idea's origin and the rejected logo options come from Abdullah, and aren't
 recorded elsewhere in this file.
