@@ -2,6 +2,9 @@
 
 Confirmed orders. Fewer refusals.
 
+**CSV phone format and real-phone tests (2026-11-01).** The courier CSV now exports phones as `0300-1234567`.
+WhatsApp opening and CSV download were verified by Abdullah on a real phone. Section 19 has the details.
+
 **Phase 4 step 2: welcome copy (2026-11-01).** The slogan moved from the footer to under the "Pakka" wordmark,
 and the footer is "Made for Instagram and WhatsApp sellers in Pakistan" again. Section 18 lists what was tested.
 
@@ -117,11 +120,11 @@ README.md                beginner setup guide
 | # | Requested | Status | Notes |
 |---|---|---|---|
 | 1 | Add an order in under 20 seconds: name, WhatsApp number, city, items, amount (Rs) | ✅ | `components/OrderForm.js`. Phone field first; returning customers get name/city/address auto-filled; city suggestions list. The "under 20 seconds" goal itself is **unverified** (not timed). Also has an optional Address field. Amount accepts digits and commas, and decimals are rounded to whole rupees (`2,500.50` → 2501); anything else (`2.5k`, `Rs 2500`) shows "Enter the amount in rupees using numbers only, like 2500 or 2,500" (both languages). |
-| 2 | "Send confirmation" opens WhatsApp via wa.me with a Roman Urdu message | ✅ | `lib/messages.js`. Text matches the requested template, plus a city/address line and optional shop name. Available on the form ("Save & send on WhatsApp") and on every Waiting order card. English version also exists (chosen in Settings). "Save & send" now saves first: an empty window is opened during the tap (so phones don't block it), then sent to WhatsApp only after the save succeeds, or closed if the save fails. If the browser blocks even the empty window, WhatsApp opens in the same tab after saving. Tested in the browser with `window.open` stubbed; **not** tested on a real phone browser. |
+| 2 | "Send confirmation" opens WhatsApp via wa.me with a Roman Urdu message | ✅ | `lib/messages.js`. Text matches the requested template, plus a city/address line and optional shop name. Available on the form ("Save & send on WhatsApp") and on every Waiting order card. English version also exists (chosen in Settings). "Save & send" now saves first: an empty window is opened during the tap (so phones don't block it), then sent to WhatsApp only after the save succeeds, or closed if the save fails. If the browser blocks even the empty window, WhatsApp opens in the same tab after saving. **Verified** on a real phone on the live site, in Chrome and in the home-screen app: the WhatsApp app opened with the message filled in (section 19). |
 | 3 | Statuses Waiting, Confirmed, Cancelled, Shipped, Delivered, Refused, one tap each | ✅ **verified** | One main action per card (Send confirmation / Mark confirmed + Remind / Mark shipped / Mark delivered + Mark refused); the "···" button opens a bottom sheet with all six statuses, Open chat in WhatsApp, Edit, Delete. 5-second Undo toast after each change. Status changes, Undo, edit and delete were confirmed in the real database. |
 | 4 | Red warning on a new order if that number refused before, with count | ✅ **verified** | Shown in the form as soon as the number is valid, and on every order card. Counts come from the `customer_refusals` view. Counts are per seller only (by design, because of RLS; a second account saw no warning for the same number). |
 | 5 | Daily view: confirmed orders ready to ship, waiting orders with "Remind" | ✅ / 🟡 | `components/TodayView.js` also shows a "Shipped" section. 🟡 It is not filtered by date: it shows **all** orders currently in those statuses, not only today's. Whether that matches the intent is a judgement call. |
-| 6 | Export confirmed list as CSV for the courier | 🟡 | `lib/csv.js`. Works and offers to mark them Shipped afterwards (**verified** against the real database, with the file captured in the page rather than downloaded); the toast now reports the real result ("8 orders marked Shipped", or "8 marked Shipped, 2 failed…"). Columns are generic (Order ID, Customer Name, Phone, City, Address, Items, COD Amount, Order Date); not matched to any specific courier's bulk-upload template (TCS, Leopards, PostEx, etc.). Upload acceptance by any courier is **unverified**. A real file download, on a phone or a computer, is also **unverified**. |
+| 6 | Export confirmed list as CSV for the courier | 🟡 | `lib/csv.js`. Works and offers to mark them Shipped afterwards (**verified** against the real database, with the file captured in the page rather than downloaded); the toast now reports the real result ("8 orders marked Shipped", or "8 marked Shipped, 2 failed…"). Columns are generic (Order ID, Customer Name, Phone, City, Address, Items, COD Amount, Order Date); not matched to any specific courier's bulk-upload template (TCS, Leopards, PostEx, etc.). Phones are exported as `0300-1234567`, so spreadsheet apps keep the leading 0. Upload acceptance by any courier is **unverified**, including whether courier portals accept the dash. A real file download is **verified** on a real phone, in Chrome and in the home-screen app, and the file opened in Excel (section 19). The new phone format in Excel and Google Sheets is pending Abdullah's re-check. |
 
 ### Rules
 
@@ -215,7 +218,8 @@ was refused (401).
   returns `null` and the form shows "Enter a Pakistani mobile number".
 - **Compared** by exact string equality on the normalised value: refusal counts
   (`refusals[order.phone]`), returning-customer lookup (`o.phone === phone`).
-- **Displayed** as `0300-1234567` (`displayPhone`); exported to CSV as `03001234567` (`localPhone`).
+- **Displayed and exported to CSV** as `0300-1234567` (`displayPhone`). `localPhone` in `lib/phone.js`
+  (`03001234567`) is no longer used by anything.
 - **Search** (`OrdersView.js`): strips non-digits and one leading 0 from the query, then does a
   substring match on the stored number (needs 3+ digits).
 - Edge cases: only Pakistani mobiles are accepted; landlines and foreign numbers are rejected.
@@ -299,6 +303,7 @@ No `TODO` or `FIXME` comments exist in the code.
    Waiting/Confirmed orders disappear from Today/Orders, and returning-customer auto-fill misses them.
    Refusal counts are not affected (they come from the view).
 4. ~~"Save & send" opens WhatsApp before saving.~~ **Fixed:** WhatsApp opens only after a successful save.
+   Opening WhatsApp is **verified** on a real phone (section 19); the failed-save path was not tried there.
 5. **Message counter counts taps, not sends.** Tapping Send/Remind increments `messages_sent`
    even if the seller backs out of WhatsApp.
 6. ~~Deleting a refused order erases that refusal from history.~~ **Fixed in the app:** tapping
@@ -623,7 +628,7 @@ Checked by Abdullah on a real Android phone in Chrome, on the live site:
 | Email login via magic link | ✅ |
 | Urdu | ✅ |
 
-**Still unverified:** WhatsApp opening, CSV download, and a low-end device test.
+**Still unverified:** a low-end device test. WhatsApp opening and CSV download were verified later (section 19).
 
 `npm run build` passes (run by Claude).
 
@@ -755,3 +760,43 @@ New Roman Urdu string for Abdullah's review: `welcomeFoot`, "Pakistan ke Instagr
 **Not tested:** a real phone; the sent-link state, which needs a real email; the live site.
 
 Screenshots are in `screenshots/welcome-copy/`, which is git-ignored.
+
+---
+
+## 19. CSV phone format and real-phone tests (2026-11-01)
+
+### Real-phone tests by Abdullah
+
+On the live site, on a real phone, logged in to a real account, in Chrome and in the home-screen app. The facts
+come from Abdullah; Claude did not run these.
+
+| Check | Result |
+|---|---|
+| Save and send on WhatsApp: the WhatsApp app opened with the message filled in; the order was saved and showed the message as sent | ✅ |
+| Remind: the same | ✅ |
+| Export CSV: the file downloaded and opened in Excel; the mark-as-shipped prompt worked | ✅ |
+| Phone numbers in Excel | ❌ Leading 0 dropped (`3001234567`), because Excel treats the column as a number. Fixed below |
+
+That was the only problem found.
+
+### The fix
+
+`lib/csv.js` now exports the Phone column with `displayPhone`, as `0300-1234567`. Nothing else in the CSV changed.
+
+Tested by Claude: the real Export CSV button in demo mode on the dev server, in headless Edge, with the real
+downloaded files compared before and after the change on identical orders. The test orders included commas, quotes
+and a new line in names, cities, items and addresses, and text starting with `=`, `-`, `+` and `@`.
+
+| Check | Result |
+|---|---|
+| Every phone is `03XX-XXXXXXX` and is the old number with a dash added | ✅ |
+| Every other cell identical, same 8 columns in the same order, byte order mark kept | ✅ |
+| Commas, quotes and a new line read back correctly with a strict CSV parser | ✅ |
+| Text starting with `=`, `-`, `+` or `@` still gets the leading `'` | ✅ |
+| Mark-as-shipped prompt still appears after the download (answered No in this test) | ✅ |
+| `npm run build` | ✅ |
+
+**Pending:** Abdullah's re-check of the new format in Excel and Google Sheets on his phone.
+
+**Not tested:** whether any courier portal accepts the dash. The comment on `localPhone` says `03001234567` is
+what most courier portals expect, so a portal could reject `0300-1234567`. No portal has been tried in either format.

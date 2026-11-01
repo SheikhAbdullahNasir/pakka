@@ -29,7 +29,7 @@ A mobile-first web app for small Pakistani sellers who take cash-on-delivery ord
 | Font | Plus Jakarta Sans (self-hosted with `next/font`), weights 400, 600, 700 only |
 | Theme | Light mode only for now. Dark mode is a later phase. All colors defined as CSS variables so dark mode can be added later |
 | Today view | Shows all orders that need action, not only orders created today |
-| Courier CSV | Generic columns, no courier-specific formats |
+| Courier CSV | Generic columns, no courier-specific formats. Phones are exported as `0300-1234567` so spreadsheet apps keep the leading 0 |
 | Login | Magic link only. Free plan locks email templates; custom SMTP stays out of scope. |
 | Brand | Name: Pakka. Slogan: 'Confirmed orders. Fewer refusals.' (Urdu: 'Pakke orders. Kam refusals.'). |
 | Logo | No longer a placeholder. A "P" with a tick, drawn from paths everywhere, never from a font. The shape lives in `components/Mark.js`; `app/icon.svg` repeats it because it is a static file. |
