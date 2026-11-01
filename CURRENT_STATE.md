@@ -3,8 +3,8 @@
 Confirmed orders. Fewer refusals.
 
 **Phase 4 step 4: database rule for refused orders (2026-11-01).** `schema.sql` now refuses to delete a Refused
-order. SQL written, pending Abdullah running it on the live project. No app code changed. Section 20 lists what
-was tested and what wasn't.
+order. Abdullah ran the SQL on the live project and confirmed the policy is there. No app code changed. Section 20
+lists what was tested and what wasn't.
 
 **CSV phone format and real-phone tests (2026-11-01).** The courier CSV now exports phones as `0300-1234567`.
 WhatsApp opening and CSV download were verified by Abdullah on a real phone. Section 19 has the details.
@@ -162,8 +162,8 @@ README.md                beginner setup guide
 
 Source: `supabase/schema.sql`. It has been run in a real Supabase project (**verified**: the app's
 inserts, updates, deletes, the view and the shop upsert all work against it). Schema unchanged in
-Phase 3 part 1. The one later change is the `orders` delete policy below: SQL written, pending Abdullah
-running it on the live project (section 20).
+Phase 3 part 1. The one later change is the `orders` delete policy below, which Abdullah also ran on the
+live project (section 20).
 
 ### Table `public.orders`
 
@@ -203,7 +203,7 @@ created `with (security_invoker = true)` so it obeys the `orders` RLS policies.
 
 | Object | RLS enabled in schema.sql? | Policies |
 |---|---|---|
-| `orders` | ✅ Yes | select / insert / update, all `to authenticated`, all `user_id = auth.uid()`. Delete (`"orders: delete own"`), `to authenticated`: `user_id = auth.uid() and status <> 'refused'` (SQL written, pending Abdullah running it; until then the live project still has plain `user_id = auth.uid()`). |
+| `orders` | ✅ Yes | select / insert / update, all `to authenticated`, all `user_id = auth.uid()`. Delete (`"orders: delete own"`), `to authenticated`: `user_id = auth.uid() and status <> 'refused'` (in the live project too, confirmed from `pg_policies`, section 20). |
 | `shops` | ✅ Yes | select / insert / update `to authenticated`, `user_id = auth.uid()`. No delete policy (so sellers cannot delete their shop row; probably fine). |
 | `customer_refusals` (view) | n/a (views have no RLS) | `security_invoker = true`, so it inherits `orders` RLS. Granted `select` to `authenticated`. |
 
@@ -313,8 +313,8 @@ No `TODO` or `FIXME` comments exist in the code.
    even if the seller backs out of WhatsApp.
 6. ~~Deleting a refused order erases that refusal from history.~~ **Fixed in the app:** tapping
    Delete on a Refused order shows "Refused orders cannot be deleted. They are kept so you are
-   warned if this number orders again." (both languages). **In the database: SQL written, pending
-   Abdullah running it.** The `orders` delete policy in `schema.sql` now also needs
+   warned if this number orders again." (both languages). **Now enforced in the database too:** the
+   `orders` delete policy, in `schema.sql` and in the live project, also needs
    `status <> 'refused'` (section 20).
    - **Known gap, not fixed:** a seller can still change a Refused order to another status and then
      delete it. Closing that would need a separate refusal history table, which is out of scope.
@@ -823,10 +823,10 @@ what most courier portals expect, so a portal could reject `0300-1234567`. No po
 ## 20. Phase 4 step 4: database rule for refused orders (2026-11-01)
 
 `schema.sql` only: the `"orders: delete own"` policy gained `and status <> 'refused'`. Its name and everything else
-stayed the same. **SQL written, pending Abdullah running it** on the live project, so the live database does not
-enforce this yet. Remove this line and the matching lines in sections 3 and 7 once Abdullah confirms.
+stayed the same. **Abdullah ran this SQL on the live project (2026-11-01)**, and the check below returned the
+expected row.
 
-The same SQL, for the Supabase SQL editor:
+The SQL, as run in the Supabase SQL editor:
 
 ```sql
 drop policy "orders: delete own" on public.orders;
@@ -868,6 +868,6 @@ this change. The test script was not added to the repo, and the project still ha
 | `npm run build` | ✅ |
 | `npm test` | Not run: the project has no test script |
 
-**Not tested:** the policy on the live database, or through the app. The SQL hasn't been run there yet, and
-testing it as a seller would need a new login, so no login emails were sent. PGlite is real Postgres, but it isn't
-the Supabase project.
+**Not tested:** an actual delete being refused on the live database, or through the app. The live check shows the
+policy is in place, not how it behaves there. Testing it as a seller would need a new login, so no login emails were
+sent. PGlite is real Postgres, but it isn't the Supabase project.

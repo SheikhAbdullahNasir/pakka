@@ -243,7 +243,7 @@ Same look as the welcome screen, with a clear message that the app is not config
 | 1. Bug fixes + explicit demo mode | Done (commit `763ee31`) |
 | 2. UI and UX redesign per this spec | Done (2026-10-30) |
 | 3. Supabase setup + Vercel deploy | Done (2026-10-30) |
-| 4. Real phone testing, README polish, portfolio write-up | In progress: steps 1 to 3 done, step 4 in progress |
+| 4. Real phone testing, README polish, portfolio write-up | In progress: steps 1 to 4 done |
 | 5. Dark mode | Optional, later |
 
 ### Phase 2 definition of done
