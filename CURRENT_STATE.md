@@ -2,7 +2,7 @@
 
 Confirmed orders. Fewer refusals.
 
-**Leading 0 wording (2026-11-02).** The brief, the case study and section 19 no longer name Excel as the app that dropped the leading 0, because it was most likely WPS Office. `npm run build` passes, and no app code changed.
+**Leading 0 wording (2026-11-02).** The brief, the case study and sections 2 and 19 no longer name Excel as the app used in the first CSV test, because it was most likely WPS Office. `npm run build` passes, and no app code changed.
 
 **Project brief (2026-11-02).** `docs/PROJECT_BRIEF.md` added, for pasting into AI chats; its links resolve, `npm run build` passes, and no app code changed.
 
@@ -143,7 +143,7 @@ docs/screenshots/        README screenshots (committed; the root screenshots/ fo
 | 3 | Statuses Waiting, Confirmed, Cancelled, Shipped, Delivered, Refused, one tap each | ✅ **verified** | One main action per card (Send confirmation / Mark confirmed + Remind / Mark shipped / Mark delivered + Mark refused); the "···" button opens a bottom sheet with all six statuses, Open chat in WhatsApp, Edit, Delete. 5-second Undo toast after each change. Status changes, Undo, edit and delete were confirmed in the real database. |
 | 4 | Red warning on a new order if that number refused before, with count | ✅ **verified** | Shown in the form as soon as the number is valid, and on every order card. Counts come from the `customer_refusals` view. Counts are per seller only (by design, because of RLS; a second account saw no warning for the same number). |
 | 5 | Daily view: confirmed orders ready to ship, waiting orders with "Remind" | ✅ / 🟡 | `components/TodayView.js` also shows a "Shipped" section. 🟡 It is not filtered by date: it shows **all** orders currently in those statuses, not only today's. Whether that matches the intent is a judgement call. |
-| 6 | Export confirmed list as CSV for the courier | 🟡 | `lib/csv.js`. Works and offers to mark them Shipped afterwards (**verified** against the real database, with the file captured in the page rather than downloaded); the toast now reports the real result ("8 orders marked Shipped", or "8 marked Shipped, 2 failed…"). Columns are generic (Order ID, Customer Name, Phone, City, Address, Items, COD Amount, Order Date); not matched to any specific courier's bulk-upload template (TCS, Leopards, PostEx, etc.). Phones are exported as `0300-1234567`, so spreadsheet apps keep the leading 0. Upload acceptance by any courier is **unverified**, including whether courier portals accept the dash. A real file download is **verified** on a real phone, in Chrome and in the home-screen app, and the file opened in Excel (section 19). The new phone format is **verified** in WPS Office on a real Android phone; Google Sheets on the phone was not tested (section 19). |
+| 6 | Export confirmed list as CSV for the courier | 🟡 | `lib/csv.js`. Works and offers to mark them Shipped afterwards (**verified** against the real database, with the file captured in the page rather than downloaded); the toast now reports the real result ("8 orders marked Shipped", or "8 marked Shipped, 2 failed…"). Columns are generic (Order ID, Customer Name, Phone, City, Address, Items, COD Amount, Order Date); not matched to any specific courier's bulk-upload template (TCS, Leopards, PostEx, etc.). Phones are exported as `0300-1234567`, so spreadsheet apps keep the leading 0. Upload acceptance by any courier is **unverified**, including whether courier portals accept the dash. A real file download is **verified** on a real phone, in Chrome and in the home-screen app, and the file opened in a spreadsheet app (section 19). The new phone format is **verified** in WPS Office on a real Android phone; Google Sheets on the phone was not tested (section 19). |
 
 ### Rules
 
@@ -800,7 +800,7 @@ come from Abdullah; Claude did not run these.
 |---|---|
 | Save and send on WhatsApp: the WhatsApp app opened with the message filled in; the order was saved and showed the message as sent | ✅ |
 | Remind: the same | ✅ |
-| Export CSV: the file downloaded and opened in Excel; the mark-as-shipped prompt worked | ✅ |
+| Export CSV: the file downloaded and opened in a spreadsheet app; the mark-as-shipped prompt worked | ✅ |
 | Phone numbers in a spreadsheet app on Abdullah's phone (most likely WPS Office, which opens CSV files on that phone) | ❌ Leading 0 dropped (`3001234567`), because the app treats the column as a number. Fixed below |
 
 That was the only problem found.
@@ -827,7 +827,7 @@ Re-checked by Abdullah on his Android phone, after `fac1340` deployed (2026-11-0
 | Check | Result |
 |---|---|
 | The CSV opened in WPS Office, and phones showed as `0300-1234567` | ✅ |
-| Excel re-check | Replaced by the WPS check |
+| Re-check in another spreadsheet app | Replaced by the WPS check |
 | Google Sheets on the phone | Not tested: it only opens in the browser there |
 
 **Not tested:** whether any courier portal accepts the dash. The comment on `localPhone` says `03001234567` is
